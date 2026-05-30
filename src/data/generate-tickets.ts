@@ -10,9 +10,10 @@ import {
 } from "~/types/schemas/ticket";
 import { format } from "date-fns";
 import users from "~/data/users.json";
+import { FAKER_SEED } from "~/data/seed";
 
 export const generateTickets = () => {
-	console.log("generating tickets...");
+	console.log(`generating tickets with seed: ${FAKER_SEED}`);
 
 	const tickets = Array.from({ length: 100 }, () => {
 		const createdAt = faker.date.past();
@@ -63,5 +64,5 @@ export const generateTickets = () => {
 		JSON.stringify(tickets, null, 2),
 	);
 
-	console.log("tickets done!");
+	console.log("done generating tickets!");
 };

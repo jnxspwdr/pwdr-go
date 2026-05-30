@@ -56,8 +56,9 @@ function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
 
 const fieldVariants = cva(
 	cn(
-		"group/field flex w-full gap-1 data-[invalid=true]:text-destructive relative has-[input:focus-visible]:[&_input,&_textarea,&_[data-slot='input-group']]:rounded-tl-none! has-[label[data-fancy='true']]:mt-(--label-height) [--label-height:24px]",
+		"group/field flex w-full gap-1 data-[invalid=true]:text-destructive relative has-[label[data-fancy='true']]:mt-(--label-height) [--label-height:24px]",
 		"has-[input:focus-visible,textarea:focus-visible]:[&_[data-slot='field-label-wrapper']]:border-ring has-[input[aria-invalid='true'],textarea[aria-invalid='true']]:[&_[data-slot='field-label-wrapper']]:border-destructive",
+		"has-[input:focus-visible]:[&_input,&_textarea,&_[data-slot='input-group']]:rounded-tl-none! has-[input[value]:not([value=''])]:[&,&_[data-slot='input-group']]:rounded-tl-none!",
 	),
 	{
 		variants: {
@@ -125,7 +126,7 @@ function FieldLabel({
 			className={cn(
 				"group/field-label peer/field-label z-20 px-3 flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50",
 				!disableFancy &&
-					"text-xs absolute top-1/2 -translate-y-1/2 group-has-[input:focus-visible]/field:-top-[10px] transition-[top]",
+					"text-xs absolute top-1/2 -translate-y-1/2 group-has-[input:focus-visible]/field:-top-[10px] transition-[top] group-has-[input[value]:not([value=''])]/field:-top-[10px]",
 				"has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border [&>*]:data-[slot=field]:p-4",
 				"has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 dark:has-data-[state=checked]:bg-primary/10",
 				className,
@@ -144,7 +145,9 @@ function FieldLabel({
 			<div
 				className={cn(
 					"z-10 rounded-t-md left-0 bg-input w-fit border-input-accent border-b-0!",
-					"absolute py-0 group-has-[input:focus-visible]/field:border border-0 group-has-[input:focus-visible]/field:h-(--label-height) h-0 transition-[height] group-has-[input:focus-visible]/field:py-1 bottom-[calc(100%-1px)]",
+					"absolute py-0 border-0 h-0 transition-[height] bottom-[calc(100%-1px)]",
+					"group-has-[input:focus-visible]/field:h-(--label-height) group-has-[input:focus-visible]/field:border group-has-[input:focus-visible]/field:py-1",
+					"group-has-[input[value]:not([value=''])]/field:h-(--label-height) group-has-[input[value]:not([value=''])]/field:border group-has-[input[value]:not([value=''])]/field:py-1",
 				)}
 				data-slot="field-label-wrapper"
 				style={{

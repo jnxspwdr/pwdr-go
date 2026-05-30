@@ -26,8 +26,8 @@ export const ticketSchema = z.object({
 	title: z.string(),
 	description: z.string(),
 	priority: z.enum(TICKET_PRIORITIES),
-	status: z.enum(TICKET_STATUSES),
-	type: z.enum(TICKET_TYPES),
+	status: z.literal(TICKET_STATUSES),
+	type: z.literal(TICKET_TYPES),
 	reportedBy: userSchema.pick({
 		id: true,
 		fullName: true,

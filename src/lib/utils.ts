@@ -26,3 +26,10 @@ export const shuffle = <T>(array: Array<T>) => {
 
 	return newArray;
 };
+
+export const randInt = (opts?: { min?: number; max?: number }) => {
+	const min = opts?.min ?? 0;
+	const max = opts?.max ?? 10;
+
+	return Math.floor(Math.random() * (max - min + 1) + min);
+};

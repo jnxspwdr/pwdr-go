@@ -7,7 +7,7 @@ import { cn } from "~/lib/utils";
 const buttonVariants = cva(
 	cn(
 		"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring aria-invalid:border-destructive",
-		"focus-visible:ring-2 ring-offset-2 ring-offset-background",
+		"focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
 	),
 	{
 		variants: {
@@ -21,9 +21,9 @@ const buttonVariants = cva(
 				destructive:
 					"bg-destructive text-white shadow-xs hover:bg-destructive/80 dark:bg-destructive/60 focus-visible:ring-destructive/80 dark:focus-visible:ring-destructive/60",
 				outline:
-					"border bg-background shadow-xs hover:text-accent-foreground hover:bg-background/50 focus-visible:ring-background/50",
+					"border bg-background shadow-xs hover:text-accent-foreground hover:bg-background-accent focus-visible:ring-background-accent",
 				ghost:
-					"hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 focus-visible:ring-accent-foreground/80 dark:focus-visible:ring-accent/50",
+					"hover:bg-background-accent hover:text-accent-foreground focus-visible:ring-accent-foreground/80",
 				link: "text-primary underline-offset-4 hover:underline",
 			},
 			size: {
@@ -46,6 +46,7 @@ function Button({
 	variant,
 	size,
 	asChild = false,
+	type = "button",
 	...props
 }: React.ComponentProps<"button"> &
 	VariantProps<typeof buttonVariants> & {
@@ -57,6 +58,7 @@ function Button({
 		<Comp
 			data-slot="button"
 			className={cn(buttonVariants({ variant, size, className }))}
+			type={type}
 			{...props}
 		/>
 	);

@@ -1,10 +1,20 @@
 import { faker, SexType } from "@faker-js/faker";
 import fs from "fs";
 import path from "path";
+import { FAKER_SEED } from "~/data/seed";
 import { shuffle } from "~/lib/utils";
-import { User, userSchema } from "~/types/schemas/user";
+import {
+	femmeLikeGenders,
+	femmePronouns,
+	mascLikeGenders,
+	mascPronouns,
+	miscGenders,
+	miscPronouns,
+	User,
+	userSchema,
+} from "~/types/schemas/user";
 
-const femaleAvatars = [
+const femmeAvatars = [
 	"49",
 	"48",
 	"47",
@@ -16,12 +26,33 @@ const femaleAvatars = [
 	"26",
 	"16",
 ];
-const maleAvatars = ["68", "59", "53", "52", "18", "14", "13", "12", "11", "8"];
+const mascAvatars = ["68", "59", "53", "52", "18", "14", "13", "12", "11", "8"];
+
+const weightedFemmeLikeGenders = femmeLikeGenders.map((gender) => {
+	return {
+		value: gender,
+		weight: gender.toLocaleLowerCase().includes("cis") ? 4 : 1,
+	};
+});
+
+const weightedMascLikeGenders = mascLikeGenders.map((gender) => {
+	return {
+		value: gender,
+		weight: gender.toLocaleLowerCase().includes("cis") ? 4 : 1,
+	};
+});
+
+const weightedMiscGenders = miscGenders.map((gender) => {
+	return {
+		value: gender,
+		weight: 1,
+	};
+});
 
 export const generateUsers = () => {
-	console.log("generating users...");
+	console.log(`generating users with seed: ${FAKER_SEED}`);
 
-	const femaleUsers = femaleAvatars.map((avatarIndex) => {
+	const femmeUsers = femmeAvatars.map((avatarIndex) => {
 		const sex: SexType = "female";
 
 		const firstName = faker.person.firstName(sex);
@@ -31,12 +62,27 @@ export const generateUsers = () => {
 			lastName,
 			sex,
 		});
+		const gender = faker.helpers.arrayElement([
+			...weightedFemmeLikeGenders,
+			...weightedMiscGenders,
+		]).value;
+		const pronouns = faker.helpers.arrayElements(
+			gender.toLocaleLowerCase().includes("cis")
+				? femmePronouns
+				: [...femmePronouns, ...miscPronouns],
+			{
+				min: 1,
+				max: 2,
+			},
+		);
 
 		const user: User = {
 			id: faker.string.ulid(),
 			firstName,
 			lastName,
 			fullName,
+			gender,
+			pronouns,
 			email: faker.internet.email({
 				firstName,
 				lastName,
@@ -51,7 +97,7 @@ export const generateUsers = () => {
 		return user;
 	});
 
-	const maleUsers = maleAvatars.map((avatarIndex) => {
+	const mascUsers = mascAvatars.map((avatarIndex) => {
 		const sex: SexType = "male";
 
 		const firstName = faker.person.firstName(sex);
@@ -62,11 +108,27 @@ export const generateUsers = () => {
 			sex,
 		});
 
+		const gender = faker.helpers.arrayElement([
+			...weightedMascLikeGenders,
+			...weightedMiscGenders,
+		]).value;
+		const pronouns = faker.helpers.arrayElements(
+			gender.toLocaleLowerCase().includes("cis")
+				? mascPronouns
+				: [...mascPronouns, ...miscPronouns],
+			{
+				min: 1,
+				max: 2,
+			},
+		);
+
 		const user: User = {
 			id: faker.string.ulid(),
 			firstName,
 			lastName,
 			fullName,
+			gender,
+			pronouns,
 			email: faker.internet.email({
 				firstName,
 				lastName,
@@ -81,12 +143,25 @@ export const generateUsers = () => {
 		return user;
 	});
 
-	const users = shuffle([...femaleUsers, ...maleUsers]);
+	const pwdrFirstName = "Powder";
+	const pwdr: User = {
+		id: faker.string.ulid(),
+		firstName: pwdrFirstName,
+		lastName: null,
+		fullName: pwdrFirstName,
+		gender: "Agender",
+		pronouns: ["they/them", "any/all"],
+		email: "jnxspwdr@pwdr.com",
+		avatar: "https://imgur.com/gallery/jinx-pfp-v3-256-eWBdJWx#S0FXGEn",
+		phoneNumber: faker.phone.number({ style: "international" }),
+	};
+
+	const users = shuffle([...femmeUsers, ...mascUsers, pwdr]);
 
 	fs.writeFileSync(
 		path.join(__dirname, "users.json"),
 		JSON.stringify(users, null, 2),
 	);
 
-	console.log("users done!");
+	console.log("done generating users!");
 };
