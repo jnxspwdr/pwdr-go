@@ -2,7 +2,11 @@ import { redirect } from "next/navigation";
 import { ServerCrumbs } from "~/components/breadcrumb-portal";
 
 export default async function RootPage() {
-	redirect("/dashboard");
+	if (localStorage.getItem("remember_me") === "true") {
+		redirect("/dashboard");
+	} else {
+		redirect("/sign-in");
+	}
 
-	return <ServerCrumbs crumbs={null} />;
+	return null;
 }

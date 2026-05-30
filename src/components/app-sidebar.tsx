@@ -23,6 +23,7 @@ import {
 	SidebarTrigger,
 	useSidebar,
 } from "~/components/ui/sidebar";
+import { authStore } from "~/store.auth";
 
 const MAIN_NAV_ITEMS: {
 	id: number;
@@ -53,6 +54,8 @@ const MAIN_NAV_ITEMS: {
 export const AppSidebar = () => {
 	const pathname = usePathname();
 	const { state, toggleSidebar } = useSidebar();
+	const user = authStore((state) => state.user);
+	console.log(user);
 
 	return (
 		<Sidebar
@@ -84,6 +87,9 @@ export const AppSidebar = () => {
 			</SidebarContent>
 			<SidebarFooter>
 				<SidebarMenu>
+					<SidebarMenuItem>
+						<SidebarMenuButton size={"lg"}>{user?.firstName}</SidebarMenuButton>
+					</SidebarMenuItem>
 					<SidebarMenuItem>
 						<SidebarMenuButton onClick={() => toggleSidebar()}>
 							{state === "expanded" ? (

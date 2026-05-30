@@ -7,7 +7,6 @@ type AuthState = {
 	user: User | null;
 	code: string;
 	email: string;
-	remember: boolean;
 };
 
 type AuthActions = {
@@ -32,5 +31,4 @@ export const authStore = create<AuthState & AuthActions>()((set) => ({
 
 	code: "",
 	email: "",
-	remember: false,
 }));
