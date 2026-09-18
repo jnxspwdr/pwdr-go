@@ -141,6 +141,18 @@ export const generateUsers = (): User[] => {
 		return user;
 	});
 
+	const users = shuffle([...femmeUsers, ...mascUsers]);
+
+	console.log(`generated ${users.length} users!`);
+
+	return users;
+};
+
+// "Powder" is a distinct admin account per organization (not one account
+// shared across orgs), so each org gets its own login —
+// e.g. jnxspwdr@acme.com, jnxspwdr@globex.com — rather than pwdr needing
+// multiple memberships/an org switcher to be admin everywhere.
+export const createPwdrUser = (emailDomain: string): User => {
 	const pwdrFirstName = "Powder";
 	const pwdr: User = {
 		id: faker.string.ulid(),
@@ -149,14 +161,12 @@ export const generateUsers = (): User[] => {
 		fullName: pwdrFirstName,
 		gender: "Agender",
 		pronouns: ["they/them", "any/all"],
-		email: "jnxspwdr@pwdr.com",
+		email: `jnxspwdr@${emailDomain}`,
 		avatar: "https://imgur.com/gallery/jinx-pfp-v3-256-eWBdJWx#S0FXGEn",
 		phoneNumber: faker.phone.number({ style: "international" }),
 	};
 
-	const users = shuffle([...femmeUsers, ...mascUsers, pwdr]);
+	userSchema.parse(pwdr);
 
-	console.log(`generated ${users.length} users!`);
-
-	return users;
+	return pwdr;
 };

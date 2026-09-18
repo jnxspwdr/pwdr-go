@@ -45,8 +45,11 @@ Scripts (`package.json`):
 There is no self-serve sign-up. Users only exist via the seed script; sign-in
 is by OTP emailed (currently just console-logged — no email provider wired
 up yet, see `sendVerificationOTP` in `src/server/auth/index.ts`) to a seeded
-address. `jnxspwdr@pwdr.com` ("Powder") is always seeded as admin of the
-first org, for predictable manual testing.
+address. "Powder" is seeded as a **distinct admin account per organization**
+(not one account with memberships everywhere) — `jnxspwdr@acme.com` for Acme
+Corp, `jnxspwdr@globex.com` for Globex Inc, one per `ORG_DEFS` entry in
+`src/data/seed.ts` — so each org can be tested as its own admin without an
+org switcher.
 
 ## Data model (`src/server/db/schema.ts`)
 
@@ -219,14 +222,17 @@ since most state is server data via tRPC/React Query or ephemeral UI state
 ## Fake data (`src/data/`)
 
 `seed.ts` wipes and reseeds the whole DB (FK-ordered deletes, then inserts).
-Splits generated users across **two** orgs (Acme Corp, Globex Inc) so tenant
-isolation is actually exercised end-to-end rather than only in code review;
-the fixed test user `jnxspwdr@pwdr.com` always lands as admin of the first
-org regardless of the faker seed, so manual sign-in testing stays predictable.
+`ORG_DEFS` (name/slug/email-domain) drives everything — splits the faker
+roster evenly across however many orgs are listed there, and gives each org
+its own "Powder" admin (`createPwdrUser(domain)`), e.g. `jnxspwdr@acme.com`
+for Acme Corp. Adding an org to `ORG_DEFS` is enough to get it a working
+admin login; regardless of the faker seed, `jnxspwdr@<domain>` is always
+that org's admin, so manual sign-in testing stays predictable.
 
-- `generate-users.ts` — faker-generated users with a deliberately broad set
-  of gender/pronoun combinations (`src/types/schemas/user.ts` enumerates the
-  options), plus a fixed "Powder" user.
+- `generate-users.ts` — `generateUsers()` returns the faker-generated roster
+  (deliberately broad set of gender/pronoun combinations — see
+  `src/types/schemas/user.ts`); `createPwdrUser(domain)` separately builds
+  one org-scoped "Powder" admin per call, used by `seed.ts` once per org.
 - `generate-tickets.ts` — faker-generated tickets per org, validated against
   `ticketSchema` before insert.
 - Faker seed is either `ENV_FAKER_SEED` or a fresh random seed logged to the

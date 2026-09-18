@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
+import { createPwdrUser, generateUsers } from "~/data/generate-users";
 import { generateTickets } from "~/data/generate-tickets";
-import { generateUsers } from "~/data/generate-users";
 import { env } from "~/env";
 import { db } from "~/server/db";
 import {
@@ -18,42 +18,35 @@ export const FAKER_SEED = env.ENV_FAKER_SEED || faker.seed();
 faker.setDefaultRefDate(REF_DATE);
 faker.seed(FAKER_SEED);
 
-const users = generateUsers();
-
-// Split the roster across two organizations so tenant isolation is actually
-// exercised, not just theoretical. "Powder" always lands in the first org
-// (as its admin) so manual sign-in testing with jnxspwdr@pwdr.com stays
-// predictable regardless of the faker seed.
-const pwdr = users.find((generatedUser) => generatedUser.email === "jnxspwdr@pwdr.com");
-if (!pwdr) throw new Error("expected generateUsers() to always include the pwdr user");
-
-const rest = users.filter((generatedUser) => generatedUser.id !== pwdr.id);
-const midpoint = Math.ceil(rest.length / 2);
-const globexUsers = rest.slice(midpoint);
-
-const orgs: {
-	id: string;
-	name: string;
-	slug: string;
-	users: User[];
-	adminId: string;
-}[] = [
-	{
-		id: crypto.randomUUID(),
-		name: "Acme Corp",
-		slug: "acme-corp",
-		users: [pwdr, ...rest.slice(0, midpoint)],
-		adminId: pwdr.id,
-	},
-	{
-		id: crypto.randomUUID(),
-		name: "Globex Inc",
-		slug: "globex-inc",
-		users: globexUsers,
-		adminId: globexUsers[0].id,
-	},
+// Every org gets its own "Powder" admin account (distinct user row, org-scoped
+// email) rather than one pwdr account holding memberships across orgs — see
+// createPwdrUser. Add an org here and it gets its own admin automatically.
+const ORG_DEFS = [
+	{ name: "Acme Corp", slug: "acme-corp", domain: "acme.com" },
+	{ name: "Globex Inc", slug: "globex-inc", domain: "globex.com" },
 ];
 
+const regularUsers = generateUsers();
+
+// Split the regular (non-pwdr) roster evenly across orgs so tenant isolation
+// is actually exercised, not just theoretical.
+const orgs = ORG_DEFS.map((def, i) => {
+	const share = regularUsers.slice(
+		Math.floor((i * regularUsers.length) / ORG_DEFS.length),
+		Math.floor(((i + 1) * regularUsers.length) / ORG_DEFS.length),
+	);
+	const admin = createPwdrUser(def.domain);
+
+	return {
+		id: crypto.randomUUID(),
+		name: def.name,
+		slug: def.slug,
+		users: [admin, ...share] as User[],
+		adminId: admin.id,
+	};
+});
+
+const users = orgs.flatMap((org) => org.users);
 const tickets = orgs.flatMap((org) => generateTickets(org.users, org.id, 50));
 
 // Clear existing rows so re-running this script doesn't hit unique constraint
