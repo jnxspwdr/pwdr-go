@@ -32,6 +32,23 @@ export const user = pgTable("user", {
 	phoneNumber: text("phone_number").notNull(),
 });
 
+// export const ticketsRelations = relations(tickets, ({ one }) => ({
+// 	organization: one(organization, {
+// 		fields: [tickets.organizationId],
+// 		references: [organization.id],
+// 	}),
+// 	reportedBy: one(user, {
+// 		fields: [tickets.reportedById],
+// 		references: [user.id],
+// 		relationName: "reportedTickets",
+// 	}),
+// 	assignedTo: one(user, {
+// 		fields: [tickets.assignedToId],
+// 		references: [user.id],
+// 		relationName: "assignedTickets",
+// 	}),
+// }));
+
 export const session = pgTable("session", {
 	id: text("id").primaryKey(),
 	expiresAt: timestamp("expires_at").notNull(),
@@ -103,13 +120,36 @@ export const member = pgTable("member", {
 	organizationId: text("organization_id")
 		.notNull()
 		.references(() => organization.id, { onDelete: "cascade" }),
+	// unique, not just indexed: this app pins each user to exactly one org
+	// (see ORG_DEFS / createPwdrUser in src/data/seed.ts) — a person who
+	// needs access to more than one org gets a separate user row per org,
+	// never a second membership on the same row.
 	userId: text("user_id")
 		.notNull()
+		.unique()
 		.references(() => user.id, { onDelete: "cascade" }),
 	// "owner" | "admin" | "member" (better-auth org plugin default roles)
 	role: text("role").notNull().default("member"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const userRelations = relations(user, ({ one }) => ({
+	membership: one(member, {
+		fields: [user.id],
+		references: [member.userId],
+	}),
+}));
+
+export const memberRelations = relations(member, ({ one }) => ({
+	user: one(user, {
+		fields: [member.userId],
+		references: [user.id],
+	}),
+	organization: one(organization, {
+		fields: [member.organizationId],
+		references: [organization.id],
+	}),
+}));
 
 export const invitation = pgTable("invitation", {
 	id: text("id").primaryKey(),

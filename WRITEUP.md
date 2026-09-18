@@ -70,7 +70,9 @@ drizzle adapter — see the comment at the top of the file):
   `free | pro | enterprise`, default `free`, values sourced from
   `PLAN_IDS` in `src/lib/plans.ts`) used for feature gating — see below.
 - `member` — join table, `organizationId` + `userId` + `role`
-  (`"owner" | "admin" | "member"`).
+  (`"owner" | "admin" | "member"`). `userId` is `unique` — this app pins
+  every user to exactly one org (see the recipe section below), unlike
+  better-auth's default multi-org-per-user assumption.
 - `invitation` — standard better-auth invitation table. No invite flow is
   wired up in the UI yet; orgs/members only come from the seed script.
 
@@ -175,6 +177,46 @@ source of truth, importable from both client and server code (unlike
   (`src/trpc/query-client.ts`, 30s `staleTime`).
 - `src/trpc/shared.ts` — `RouterInputs`/`RouterOutputs` type helpers, used
   e.g. by `tickets-table.tsx` to type its rows off the actual router output.
+
+## Adding an org-scoped resource (recipe)
+
+Follow `routers/tickets.ts` as the template — it's the one router that's
+never needed a fix. Steps, in order:
+
+1. **Schema** (`schema.ts`, "app tables" section): new `pgTable` with an
+   `organizationId: text(...).notNull().references(() => organization.id,
+   { onDelete: "cascade" })` column. If it needs joined data (like tickets'
+   `reportedBy`/`assignedTo`), add a `relations()` block for it too.
+2. **Router**: build every procedure on `orgProcedure`, never
+   `protectedProcedure` directly. `orgProcedure` already verified the caller
+   is a real member of `ctx.org` — that check is the entire authorization
+   model here, so each query just needs `eq(table.organizationId,
+   ctx.org.id)` (or `and(...)` with more conditions for `byId`-style
+   lookups). No separate permission/ACL layer to write.
+3. **Mount it** in `root.ts`.
+4. **Push the schema**: `bun run db:push` (dev-only workflow, no migration
+   files yet — see `drizzle.config.ts`). It prompts y/n for
+   destructive-looking changes (new unique constraints, column type changes
+   on non-empty tables); that prompt needs a real TTY, so it'll hang if
+   piped/non-interactive.
+5. **Client type**: `RouterOutputs["yourRouter"]["list"][number]` in the
+   component that renders it (see `users-table.tsx` / `tickets-table.tsx`)
+   — never hand-write the row type.
+
+**One deliberate exception:** `user` is *not* an org-scoped table, even
+though every user belongs to an org. Org membership for `user` lives
+entirely in `member` (`organizationId` + `userId` + `role`), because that's
+what better-auth's own drizzle adapter expects — it manages `user` rows
+itself and doesn't know about extra required columns you bolt on unless
+they're declared in `auth.ts`'s `user.additionalFields`. Query "users in
+this org" by querying `member` (`with: { user: true }`), the way
+`routers/users.ts` does — don't add `organizationId` back onto `user`.
+
+Also: this app pins each `user` row to exactly one org, enforced by a
+`unique` constraint on `member.userId` (not just convention) — a person
+needing access to more than one org gets a second, separate `user` row
+(separate login) rather than a second membership on the same row. See
+`createPwdrUser` / `ORG_DEFS` in `src/data/seed.ts`.
 
 ## Routing (`src/app/`)
 
