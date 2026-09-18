@@ -1,9 +1,9 @@
-import fs from "fs";
-import path from "path";
 import { faker } from "@faker-js/faker";
-import { generateUsers } from "~/data/generate-users";
 import { generateTickets } from "~/data/generate-tickets";
+import { generateUsers } from "~/data/generate-users";
 import { env } from "~/env";
+import { db } from "~/server/db";
+import { tickets as ticketsTable, user as userTable } from "~/server/db/schema";
 
 const currentYear = new Date().getFullYear();
 const REF_DATE = `${currentYear}-01-01T00:00:00.000Z`;
@@ -12,17 +12,30 @@ export const FAKER_SEED = env.ENV_FAKER_SEED || faker.seed();
 faker.setDefaultRefDate(REF_DATE);
 faker.seed(FAKER_SEED);
 
-// console.log(`faker seed: ${FAKER_SEED}`);
-// console.log(`environment faker seed: ${env.ENV_FAKER_SEED}`);
+const users = generateUsers();
+const tickets = generateTickets(users);
 
-// make sure users.json exists and is up to date before generating tickets
-await new Promise((res) => {
-	res(generateUsers());
-}).then(() => {
-	generateTickets();
-});
+// Clear existing rows so re-running this script doesn't hit unique constraint
+// violations. session/account/verification cascade-delete off `user`.
+await db.delete(ticketsTable);
+await db.delete(userTable);
 
-fs.appendFileSync(
-	path.join(__dirname, "seeds.log"),
-	`${new Date().toISOString()} - Last seed used: ${FAKER_SEED}\n`,
+await db.insert(userTable).values(
+	users.map((generatedUser) => ({
+		id: generatedUser.id,
+		name: generatedUser.fullName,
+		email: generatedUser.email,
+		emailVerified: true,
+		image: generatedUser.avatar,
+		firstName: generatedUser.firstName,
+		lastName: generatedUser.lastName,
+		gender: generatedUser.gender,
+		pronouns: generatedUser.pronouns,
+		phoneNumber: generatedUser.phoneNumber,
+	})),
 );
+
+await db.insert(ticketsTable).values(tickets);
+
+console.log(`seeded ${users.length} users and ${tickets.length} tickets`);
+process.exit(0);

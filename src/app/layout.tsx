@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "~/app/globals.css";
 import { ThemeProvider } from "~/components/theme-provider";
+import { TRPCReactProvider } from "~/trpc/react";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -36,7 +37,7 @@ export default async function RootLayout({
 						enableSystem
 						disableTransitionOnChange
 					>
-						{children}
+						<TRPCReactProvider>{children}</TRPCReactProvider>
 					</ThemeProvider>
 				</JotaiProvider>
 			</body>

@@ -23,7 +23,7 @@ import {
 	SidebarTrigger,
 	useSidebar,
 } from "~/components/ui/sidebar";
-import { authStore } from "~/store.auth";
+import { authClient } from "~/lib/auth-client";
 
 const MAIN_NAV_ITEMS: {
 	id: number;
@@ -54,8 +54,8 @@ const MAIN_NAV_ITEMS: {
 export const AppSidebar = () => {
 	const pathname = usePathname();
 	const { state, toggleSidebar } = useSidebar();
-	const user = authStore((state) => state.user);
-	console.log(user);
+	const { data: session } = authClient.useSession();
+	const user = session?.user;
 
 	return (
 		<Sidebar

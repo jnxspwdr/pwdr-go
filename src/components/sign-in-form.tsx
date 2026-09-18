@@ -3,18 +3,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, Info } from "lucide-react";
 import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
-import { sendOTPCode, signIn } from "~/api/auth";
+import { authClient } from "~/lib/auth-client";
 import { Button } from "~/ui/button";
-import { Checkbox } from "~/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "~/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "~/ui/input-group";
 import {
 	InputOTP,
 	InputOTPGroup,
-	InputOTPSeparator,
 	InputOTPSlot,
 } from "~/ui/input-otp";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/ui/tooltip";
@@ -25,6 +24,7 @@ const signInFormSchema = z.object({
 });
 
 export const SignInForm = () => {
+	const router = useRouter();
 	const [step, setStep] = React.useState(0);
 	const otpRef = React.useRef<HTMLInputElement>(null);
 
@@ -37,18 +37,34 @@ export const SignInForm = () => {
 	});
 
 	const validateEmailStep = async () => {
-		if (await form.trigger("email")) {
-			setStep(1);
-			sendOTPCode({ email: form.getValues("email") });
-			otpRef.current?.focus();
+		if (!(await form.trigger("email"))) return;
+
+		const { error } = await authClient.emailOtp.sendVerificationOtp({
+			email: form.getValues("email"),
+			type: "sign-in",
+		});
+
+		if (error) {
+			form.setError("email", { message: error.message ?? "Couldn't send an OTP to that email" });
+			return;
 		}
+
+		setStep(1);
+		otpRef.current?.focus();
 	};
 
 	const onSubmit = async (data: z.infer<typeof signInFormSchema>) => {
-		signIn({
-			code: data.code,
+		const { error } = await authClient.signIn.emailOtp({
 			email: data.email,
+			otp: data.code,
 		});
+
+		if (error) {
+			form.setError("code", { message: error.message ?? "That code didn't work" });
+			return;
+		}
+
+		router.push("/dashboard");
 	};
 
 	return (
@@ -156,24 +172,31 @@ export const SignInForm = () => {
 					<Controller
 						control={form.control}
 						name="code"
-						render={({ field }) => {
+						render={({ field, fieldState }) => {
 							return (
-								<InputOTP
-									containerClassName="w-fit mx-auto"
-									maxLength={6}
-									value={field.value}
-									onChange={(newValue) => field.onChange(newValue)}
-									ref={otpRef}
-								>
-									<InputOTPGroup>
-										<InputOTPSlot index={0} />
-										<InputOTPSlot index={1} />
-										<InputOTPSlot index={2} />
-										<InputOTPSlot index={3} />
-										<InputOTPSlot index={4} />
-										<InputOTPSlot index={5} />
-									</InputOTPGroup>
-								</InputOTP>
+								<div className="grid gap-2 justify-center">
+									<InputOTP
+										containerClassName="w-fit mx-auto"
+										maxLength={6}
+										value={field.value}
+										onChange={(newValue) => field.onChange(newValue)}
+										ref={otpRef}
+									>
+										<InputOTPGroup>
+											<InputOTPSlot index={0} />
+											<InputOTPSlot index={1} />
+											<InputOTPSlot index={2} />
+											<InputOTPSlot index={3} />
+											<InputOTPSlot index={4} />
+											<InputOTPSlot index={5} />
+										</InputOTPGroup>
+									</InputOTP>
+									{fieldState.invalid && (
+										<div className="text-destructive text-sm text-center">
+											<FieldError errors={[fieldState.error]} />
+										</div>
+									)}
+								</div>
 							);
 						}}
 					/>
@@ -190,11 +213,6 @@ export const SignInForm = () => {
 						</Button>
 					</div>
 				</motion.div>
-				{/* <div className="grid gap-2">
-					<Button type="submit" variant={"primary"}>
-						Sign in
-					</Button>
-				</div> */}
 			</form>
 		</div>
 	);

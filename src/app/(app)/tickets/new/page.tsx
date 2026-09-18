@@ -1,18 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useCrumbs } from "~/components/breadcrumb-portal";
+import { trpc } from "~/trpc/react";
 import { TICKET_PRIORITIES } from "~/types/schemas/ticket";
 import { Button } from "~/ui/button";
-import {
-	Field,
-	FieldError,
-	FieldGroup,
-	FieldLabel,
-	FieldSet,
-} from "~/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "~/ui/field";
 import { Input } from "~/ui/input";
 import { Textarea } from "~/ui/textarea";
 
@@ -42,6 +38,14 @@ export default function NewTicketPage() {
 		{ title: "new" },
 	]);
 
+	const router = useRouter();
+
+	const createTicket = trpc.tickets.create.useMutation({
+		onSuccess: (ticket) => {
+			router.push(`/tickets/${ticket.id}`);
+		},
+	});
+
 	const form = useForm<z.infer<typeof newTicketFormSchema>>({
 		resolver: zodResolver(newTicketFormSchema),
 		defaultValues: {
@@ -55,11 +59,9 @@ export default function NewTicketPage() {
 		<>
 			<div className="@container">
 				<form
-					onSubmit={form.handleSubmit(
-						(data: z.infer<typeof newTicketFormSchema>) => {
-							console.log(data);
-						},
-					)}
+					onSubmit={form.handleSubmit((data) => {
+						createTicket.mutate(data);
+					})}
 				>
 					<FieldGroup>
 						<Controller
@@ -107,7 +109,14 @@ export default function NewTicketPage() {
 							}}
 						/>
 						<Field>
-							<Button type="submit">Create ticket</Button>
+							<Button type="submit" disabled={createTicket.isPending}>
+								{createTicket.isPending ? "Creating..." : "Create ticket"}
+							</Button>
+							{createTicket.isError && (
+								<div className="text-destructive text-sm">
+									{createTicket.error.message}
+								</div>
+							)}
 						</Field>
 					</FieldGroup>
 				</form>

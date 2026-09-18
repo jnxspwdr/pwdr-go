@@ -1,13 +1,14 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { differenceInDays, format, formatRelative, parseISO } from "date-fns";
+import { formatRelative } from "date-fns";
 import { Clock } from "lucide-react";
 import React from "react";
-import { Ticket } from "~/types/schemas/ticket";
+import type { RouterOutputs } from "~/trpc/shared";
 import { Badge } from "~/ui/badge";
 import { DataTable } from "~/ui/data-table";
-import { Tooltip, TooltipContent, TooltipTrigger } from "~/ui/tooltip";
+
+type Ticket = RouterOutputs["tickets"]["list"][number];
 
 export const TicketsTable = ({ tickets }: { tickets: Ticket[] }) => {
 	const columns: ColumnDef<Ticket>[] = [
@@ -23,12 +24,10 @@ export const TicketsTable = ({ tickets }: { tickets: Ticket[] }) => {
 			accessorKey: "updatedAt",
 			header: "Last active",
 			cell: ({ row }) => {
-				const value = parseISO(row.original.updatedAt);
-
 				return (
 					<Badge>
 						<Clock />
-						{formatRelative(value, new Date())}
+						{formatRelative(row.original.updatedAt, new Date())}
 					</Badge>
 				);
 			},

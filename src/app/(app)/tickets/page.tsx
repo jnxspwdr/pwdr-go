@@ -1,10 +1,10 @@
 import React from "react";
-import { getTickets } from "~/api/get-tickets";
 import { ServerCrumbs } from "~/components/breadcrumb-portal";
 import { TicketsTable } from "~/components/tickets-table";
+import { api } from "~/trpc/server";
 
 export default async function TicketsPage() {
-	const tickets = await getTickets();
+	const tickets = await api.tickets.list();
 
 	return (
 		<>

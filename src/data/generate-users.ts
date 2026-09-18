@@ -1,6 +1,4 @@
 import { faker, SexType } from "@faker-js/faker";
-import fs from "fs";
-import path from "path";
 import { FAKER_SEED } from "~/data/seed";
 import { shuffle } from "~/lib/utils";
 import {
@@ -49,7 +47,7 @@ const weightedMiscGenders = miscGenders.map((gender) => {
 	};
 });
 
-export const generateUsers = () => {
+export const generateUsers = (): User[] => {
 	console.log(`generating users with seed: ${FAKER_SEED}`);
 
 	const femmeUsers = femmeAvatars.map((avatarIndex) => {
@@ -158,10 +156,7 @@ export const generateUsers = () => {
 
 	const users = shuffle([...femmeUsers, ...mascUsers, pwdr]);
 
-	fs.writeFileSync(
-		path.join(__dirname, "users.json"),
-		JSON.stringify(users, null, 2),
-	);
+	console.log(`generated ${users.length} users!`);
 
-	console.log("done generating users!");
+	return users;
 };
