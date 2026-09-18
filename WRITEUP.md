@@ -238,11 +238,26 @@ that org's admin, so manual sign-in testing stays predictable.
 - Faker seed is either `ENV_FAKER_SEED` or a fresh random seed logged to the
   console at generation time, so a run can be reproduced later if needed.
 
+## Planned (not yet implemented)
+
+- **Devices** — a company's IT assets (laptops/phones/etc), each owned by
+  one user. Regular users see only their own devices; admins see every
+  device in the org (mirrors the tickets tenant-isolation pattern in
+  `routers/tickets.ts`, plus a role check on `ctx.member.role`). Likely
+  limited by `PLANS[...].limits.maxDevices` (`src/lib/plans.ts`).
+- **Reports** — KPI/graph dashboard (cases per user, "most troublesome"
+  user, ticket volume over time, etc). Meant to be the first consumer of
+  `requiresPlanFeature("reports")` — free-plan orgs won't have access.
+- **`/users`** — the sidebar already links here
+  (`src/components/app-sidebar.tsx`, `MAIN_NAV_ITEMS`), but the page
+  doesn't exist yet and scope isn't defined beyond "a directory of the
+  org's members."
+
 ## Known gaps (intentionally out of scope, not forgotten)
 
 - Dashboard is static placeholder content — no real metrics/queries.
 - No ticket update/assign/status-change/comment mutations — create-only.
-- No `/users` or `/profile` pages, despite nav entries linking to them.
+- No `/profile` page, despite the command palette linking to it.
 - No org switcher UI (schema/session support exists; every seeded user only
   belongs to one org today).
 - No invite flow (organization `invitation` table exists, unused).
