@@ -1,6 +1,7 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import superjson from "superjson";
+import { PLANS, planHasFeature, type PlanFeature } from "~/lib/plans";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { member, organization } from "~/server/db/schema";
@@ -78,3 +79,18 @@ export const orgProcedure = protectedProcedure.use(async ({ ctx, next }) => {
 		},
 	});
 });
+
+// Gates a procedure on the caller's org plan including a given feature. Not
+// a replacement for orgProcedure — it builds on it, so ctx.org/ctx.member
+// are still available downstream.
+export const requiresPlanFeature = (feature: PlanFeature) =>
+	orgProcedure.use(({ ctx, next }) => {
+		if (!planHasFeature(ctx.org.plan, feature)) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: `This feature isn't included in the "${PLANS[ctx.org.plan].label}" plan`,
+			});
+		}
+
+		return next({ ctx });
+	});

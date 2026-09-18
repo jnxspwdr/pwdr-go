@@ -63,8 +63,9 @@ drizzle adapter — see the comment at the top of the file):
 
 **better-auth organization plugin tables** (multi-tenancy):
 
-- `organization` — one row per tenant. Also has a `plan` column
-  (`free` default) for future plan/feature gating — not enforced anywhere yet.
+- `organization` — one row per tenant. Also has a `plan` column (pg enum
+  `free | pro | enterprise`, default `free`, values sourced from
+  `PLAN_IDS` in `src/lib/plans.ts`) used for feature gating — see below.
 - `member` — join table, `organizationId` + `userId` + `role`
   (`"owner" | "admin" | "member"`).
 - `invitation` — standard better-auth invitation table. No invite flow is
@@ -119,23 +120,45 @@ requests away from `/sign-in` to `/dashboard`. Anything that actually needs
 the session (Server Components, protected tRPC procedures) re-verifies
 against the DB via `auth.api.getSession`.
 
+## Plans / feature gating (`src/lib/plans.ts`)
+
+Data model + gating only — no real payment processor wired up. Single
+source of truth, importable from both client and server code (unlike
+`src/server/*`, which is server-only):
+
+- `PLAN_IDS` (`"free" | "pro" | "enterprise"`) — also backs the `plan`
+  pg enum in `src/server/db/schema.ts`.
+- `PLANS` — per-plan `limits` (e.g. `maxDevices`) and `features` (e.g.
+  `reports: boolean`). Placeholder values — Devices/Reports will read
+  these once they exist; nothing consumes `limits` yet.
+- `planHasFeature(plan, feature)` — plain boolean check, used by
+  `requiresPlanFeature` below and (once there's UI to gate) directly from
+  client components.
+
 ## tRPC layer (`src/server/api/`)
 
 - `trpc.ts` — `createTRPCContext` resolves the better-auth session from
-  request headers. Three procedure tiers, each building on the last:
+  request headers. Procedure tiers, each building on the last:
   - `publicProcedure` — no auth.
   - `protectedProcedure` — throws `UNAUTHORIZED` if no session.
   - `orgProcedure` — additionally resolves `ctx.session.session.activeOrganizationId`
     into a loaded `org` + `member` row, throwing `FORBIDDEN` if either is
     missing. Every org-scoped router should build on this, not
     `protectedProcedure` directly.
-- `root.ts` — `appRouter` currently mounts only `tickets`.
+  - `requiresPlanFeature(feature)` — builds on `orgProcedure`, throws
+    `FORBIDDEN` (naming the required plan) unless
+    `planHasFeature(ctx.org.plan, feature)`. Not used by any router yet —
+    Reports (planned) will be the first consumer.
+- `root.ts` — `appRouter` mounts `tickets` and `organization`.
 - `routers/tickets.ts`:
   - `list` — all tickets for the caller's active org, with `reportedBy`/`assignedTo` joined.
   - `byId` — single ticket, scoped to the caller's org (cross-org IDs 404, not leak).
   - `create` — validates `title`/`description`/`priority` via Zod, always
     creates as `status: "open"`, `type: "support incident"`,
     `reportedById: <caller>`. No update/assign/status-change mutations exist yet.
+- `routers/organization.ts`:
+  - `current` — the caller's active org (`id`, `name`, `plan`). Only
+    consumer so far is manual verification; no UI reads it yet.
 
 **Two client entry points**, both typed against `AppRouter`:
 
@@ -218,3 +241,6 @@ org regardless of the faker seed, so manual sign-in testing stays predictable.
   belongs to one org today).
 - No invite flow (organization `invitation` table exists, unused).
 - OTP emails are console-logged only — no real email provider wired up.
+- Plan gating infra exists (`requiresPlanFeature`, `src/lib/plans.ts`) but
+  nothing actually uses it yet — every org defaults to `free` and there's
+  no UI to change plans or upsell. Also no real billing/payment processor.

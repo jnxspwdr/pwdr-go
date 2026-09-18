@@ -8,6 +8,7 @@ import {
 	text,
 	timestamp,
 } from "drizzle-orm/pg-core";
+import { PLAN_IDS } from "~/lib/plans";
 import { TICKET_STATUSES, TICKET_TYPES } from "~/types/schemas/ticket";
 
 // --- better-auth core tables ---------------------------------------------
@@ -80,6 +81,8 @@ export const verification = pgTable("verification", {
 // One organization == one company/tenant. Every org-scoped app table below
 // (tickets, later devices/reports) carries an `organizationId` FK.
 
+export const planEnum = pgEnum("plan", PLAN_IDS);
+
 export const organization = pgTable("organization", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
@@ -90,8 +93,9 @@ export const organization = pgTable("organization", {
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 	updatedAt: timestamp("updated_at"),
 
-	// data model for Phase B (plan/feature gating) — not enforced anywhere yet
-	plan: text("plan").notNull().default("free"),
+	// gates access via requiresPlanFeature (src/server/api/trpc.ts) — see
+	// src/lib/plans.ts for what each plan unlocks
+	plan: planEnum("plan").notNull().default("free"),
 });
 
 export const member = pgTable("member", {
