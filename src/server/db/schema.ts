@@ -42,6 +42,11 @@ export const session = pgTable("session", {
 	userId: text("user_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
+	// set by databaseHooks.session.create.before in src/server/auth/index.ts
+	activeOrganizationId: text("active_organization_id").references(
+		() => organization.id,
+		{ onDelete: "set null" },
+	),
 });
 
 export const account = pgTable("account", {
@@ -71,6 +76,52 @@ export const verification = pgTable("verification", {
 	updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// --- better-auth organization plugin tables --------------------------------
+// One organization == one company/tenant. Every org-scoped app table below
+// (tickets, later devices/reports) carries an `organizationId` FK.
+
+export const organization = pgTable("organization", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	slug: text("slug").notNull().unique(),
+	logo: text("logo"),
+	// JSON blob, stored as text (better-auth's own convention for this field)
+	metadata: text("metadata"),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at"),
+
+	// data model for Phase B (plan/feature gating) — not enforced anywhere yet
+	plan: text("plan").notNull().default("free"),
+});
+
+export const member = pgTable("member", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id")
+		.notNull()
+		.references(() => organization.id, { onDelete: "cascade" }),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	// "owner" | "admin" | "member" (better-auth org plugin default roles)
+	role: text("role").notNull().default("member"),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const invitation = pgTable("invitation", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id")
+		.notNull()
+		.references(() => organization.id, { onDelete: "cascade" }),
+	email: text("email").notNull(),
+	role: text("role").notNull(),
+	status: text("status").notNull().default("pending"),
+	expiresAt: timestamp("expires_at"),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	inviterId: text("inviter_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+});
+
 // --- app tables ------------------------------------------------------------
 
 export const ticketStatusEnum = pgEnum("ticket_status", TICKET_STATUSES);
@@ -84,6 +135,9 @@ export const tickets = pgTable("tickets", {
 	priority: integer("priority").notNull(),
 	status: ticketStatusEnum("status").notNull(),
 	type: ticketTypeEnum("type").notNull(),
+	organizationId: text("organization_id")
+		.notNull()
+		.references(() => organization.id, { onDelete: "cascade" }),
 	reportedById: text("reported_by_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
@@ -95,6 +149,10 @@ export const tickets = pgTable("tickets", {
 });
 
 export const ticketsRelations = relations(tickets, ({ one }) => ({
+	organization: one(organization, {
+		fields: [tickets.organizationId],
+		references: [organization.id],
+	}),
 	reportedBy: one(user, {
 		fields: [tickets.reportedById],
 		references: [user.id],

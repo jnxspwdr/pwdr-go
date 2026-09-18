@@ -81,11 +81,11 @@ export const generateUsers = (): User[] => {
 			fullName,
 			gender,
 			pronouns,
-			email: faker.internet.email({
-				firstName,
-				lastName,
-				provider: "pwdr.com",
-			}),
+			// lowercased: better-auth normalizes emails to lowercase for lookups,
+			// so a mixed-case stored value would silently never match on sign-in
+			email: faker.internet
+				.email({ firstName, lastName, provider: "pwdr.com" })
+				.toLowerCase(),
 			avatar: `https://i.pravatar.cc/512?img=${avatarIndex}`,
 			phoneNumber: faker.phone.number({ style: "international" }),
 		};
@@ -127,11 +127,11 @@ export const generateUsers = (): User[] => {
 			fullName,
 			gender,
 			pronouns,
-			email: faker.internet.email({
-				firstName,
-				lastName,
-				provider: "pwdr.com",
-			}),
+			// lowercased: better-auth normalizes emails to lowercase for lookups,
+			// so a mixed-case stored value would silently never match on sign-in
+			email: faker.internet
+				.email({ firstName, lastName, provider: "pwdr.com" })
+				.toLowerCase(),
 			avatar: `https://i.pravatar.cc/512?img=${avatarIndex}`,
 			phoneNumber: faker.phone.number({ style: "international" }),
 		};

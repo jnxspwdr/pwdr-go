@@ -1,6 +1,8 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailOTP } from "better-auth/plugins/email-otp";
+import { organization } from "better-auth/plugins/organization";
+import { eq } from "drizzle-orm";
 import { env } from "~/env";
 import { db } from "~/server/db";
 import * as schema from "~/server/db/schema";
@@ -23,6 +25,26 @@ export const auth = betterAuth({
 			phoneNumber: { type: "string", required: true, input: false },
 		},
 	},
+	databaseHooks: {
+		session: {
+			create: {
+				// Every seeded user belongs to exactly one organization (no org
+				// switcher yet), so pin the session to it at creation time instead
+				// of resolving it per-request downstream.
+				before: async (session) => {
+					const [membership] = await db
+						.select({ organizationId: schema.member.organizationId })
+						.from(schema.member)
+						.where(eq(schema.member.userId, session.userId))
+						.limit(1);
+
+					if (!membership) return;
+
+					return { data: { activeOrganizationId: membership.organizationId } };
+				},
+			},
+		},
+	},
 	plugins: [
 		emailOTP({
 			otpLength: 6,
@@ -31,6 +53,10 @@ export const auth = betterAuth({
 				// No email provider is wired up yet — log instead of sending.
 				console.log(`[auth] ${type} OTP for ${email}: ${otp}`);
 			},
+		}),
+		organization({
+			// No self-serve org creation flow yet — orgs come from src/data/seed.ts.
+			allowUserToCreateOrganization: false,
 		}),
 	],
 });

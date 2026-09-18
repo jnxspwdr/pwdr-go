@@ -10,10 +10,14 @@ import {
 } from "~/types/schemas/ticket";
 import { User } from "~/types/schemas/user";
 
-export const generateTickets = (users: User[]): Ticket[] => {
+export const generateTickets = (
+	users: User[],
+	organizationId: string,
+	count = 100,
+): Ticket[] => {
 	console.log(`generating tickets with seed: ${FAKER_SEED}`);
 
-	const tickets = Array.from({ length: 100 }, () => {
+	const tickets = Array.from({ length: count }, () => {
 		const createdAt = faker.date.past();
 		const pickedUsers = faker.helpers.arrayElements(users, {
 			min: 2,
@@ -36,6 +40,7 @@ export const generateTickets = (users: User[]): Ticket[] => {
 				: TICKET_PRIORITIES.normal,
 			status: faker.helpers.arrayElement(TICKET_STATUSES),
 			type: faker.helpers.arrayElement(TICKET_TYPES),
+			organizationId,
 			reportedById: pickedUsers[0].id,
 			assignedToId: faker.datatype.boolean() ? pickedUsers[1].id : null,
 			createdAt,

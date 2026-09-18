@@ -29,6 +29,7 @@ export const ticketSchema = z.object({
 	priority: z.enum(TICKET_PRIORITIES),
 	status: z.literal(TICKET_STATUSES),
 	type: z.literal(TICKET_TYPES),
+	organizationId: z.string(),
 	reportedById: z.string(),
 	assignedToId: z.string().nullable(),
 	createdAt: z.date(),
