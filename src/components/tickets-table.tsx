@@ -6,12 +6,12 @@ import { Clock } from "lucide-react";
 import React from "react";
 import type { RouterOutputs } from "~/trpc/shared";
 import { Badge } from "~/ui/badge";
-import { DataTable } from "~/ui/data-table";
+import { DataTable, dataTableFeatures } from "~/ui/data-table";
 
 type Ticket = RouterOutputs["tickets"]["list"][number];
 
 export const TicketsTable = ({ tickets }: { tickets: Ticket[] }) => {
-	const columns: ColumnDef<Ticket>[] = [
+	const columns: ColumnDef<typeof dataTableFeatures, Ticket>[] = [
 		{
 			accessorKey: "title",
 			header: "Title",
