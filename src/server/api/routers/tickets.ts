@@ -3,8 +3,8 @@ import { format } from "date-fns";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, orgProcedure } from "~/server/api/trpc";
-import { tickets } from "~/server/db/schema";
-import { TICKET_PRIORITIES } from "~/types/schemas/ticket";
+import { member, tickets } from "~/server/db/schema";
+import { TICKET_PRIORITIES, TICKET_STATUSES } from "~/types/schemas/ticket";
 
 const generateTicketNumber = () => {
 	const randomSuffix = Math.floor(Math.random() * 10000)
@@ -52,9 +52,25 @@ export const ticketsRouter = createTRPCRouter({
 					.string()
 					.max(256, "Description must at most be 256 characters."),
 				priority: z.enum(TICKET_PRIORITIES),
+				// Ticket is about/assigned to this user (e.g. filed via a user's
+				// "Report" action) rather than the general queue.
+				assignedToId: z.string().optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			if (input.assignedToId) {
+				const assignee = await ctx.db.query.member.findFirst({
+					where: and(
+						eq(member.organizationId, ctx.org.id),
+						eq(member.userId, input.assignedToId),
+					),
+				});
+
+				if (!assignee) {
+					throw new TRPCError({ code: "NOT_FOUND" });
+				}
+			}
+
 			const [ticket] = await ctx.db
 				.insert(tickets)
 				.values({
@@ -67,7 +83,67 @@ export const ticketsRouter = createTRPCRouter({
 					type: "support incident",
 					organizationId: ctx.org.id,
 					reportedById: ctx.session.user.id,
+					assignedToId: input.assignedToId,
 				})
+				.returning();
+
+			return ticket;
+		}),
+
+	setStatus: orgProcedure
+		.input(z.object({ id: z.string(), status: z.enum(TICKET_STATUSES) }))
+		.mutation(async ({ ctx, input }) => {
+			const [ticket] = await ctx.db
+				.update(tickets)
+				.set({ status: input.status, updatedAt: new Date() })
+				.where(
+					and(eq(tickets.id, input.id), eq(tickets.organizationId, ctx.org.id)),
+				)
+				.returning();
+
+			if (!ticket) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			return ticket;
+		}),
+
+	// Bumps priority one tier (capped at high) and puts the ticket back in
+	// progress if it was just sitting open/waiting.
+	escalate: orgProcedure
+		.input(z.object({ id: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const existing = await ctx.db.query.tickets.findFirst({
+				where: and(
+					eq(tickets.id, input.id),
+					eq(tickets.organizationId, ctx.org.id),
+				),
+			});
+
+			if (!existing) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			if (existing.status === "closed") {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Reopen this ticket before escalating it.",
+				});
+			}
+
+			const nextPriority =
+				existing.priority < TICKET_PRIORITIES.normal
+					? TICKET_PRIORITIES.normal
+					: TICKET_PRIORITIES.high;
+
+			const [ticket] = await ctx.db
+				.update(tickets)
+				.set({
+					priority: nextPriority,
+					status: "in progress",
+					updatedAt: new Date(),
+				})
+				.where(eq(tickets.id, input.id))
 				.returning();
 
 			return ticket;
