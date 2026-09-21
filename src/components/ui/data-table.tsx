@@ -39,6 +39,7 @@ declare module "@tanstack/react-table" {
 		columnClassName?: string;
 		primary?: boolean;
 		fitContent?: boolean;
+		hideHeader?: boolean;
 		getHref?: (
 			cell: Cell<TFeatures, TData, TValue>,
 		) => React.ComponentPropsWithoutRef<typeof Link>["href"];
@@ -99,7 +100,8 @@ export const DataTable = <TData extends RowData>({
 										)}
 										key={header.id}
 									>
-										{header.isPlaceholder ? null : (
+										{header.isPlaceholder ||
+										header.column.columnDef.meta?.hideHeader ? null : (
 											<table.FlexRender header={header} />
 										)}
 									</TableHead>

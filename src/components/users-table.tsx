@@ -13,7 +13,7 @@ export const UsersTable = ({ users }: { users: User[] }) => {
 	const columns: ColumnDef<typeof dataTableFeatures, User>[] = [
 		{
 			accessorKey: "image",
-			header: "",
+			header: "Avatar",
 			cell: ({ row }) => (
 				<Avatar>
 					<AvatarImage src={row.original.image ?? ""} alt={row.original.name} />
@@ -24,6 +24,7 @@ export const UsersTable = ({ users }: { users: User[] }) => {
 			),
 			meta: {
 				fitContent: true,
+				hideHeader: true,
 			},
 			enableGlobalFilter: false,
 		},
