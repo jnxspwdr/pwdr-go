@@ -28,6 +28,7 @@ declare module "@tanstack/react-table" {
 	> {
 		columnClassName?: string;
 		primary?: boolean;
+		fitContent?: boolean;
 		getHref?: (
 			cell: Cell<TFeatures, TData, TValue>,
 		) => React.ComponentPropsWithoutRef<typeof Link>["href"];
@@ -41,7 +42,7 @@ interface DataTableProps<TData extends RowData> {
 	data: TData[];
 }
 
-export const DataTable = <TData extends RowData,>({
+export const DataTable = <TData extends RowData>({
 	columns,
 	data,
 }: DataTableProps<TData>) => {
@@ -62,6 +63,8 @@ export const DataTable = <TData extends RowData,>({
 									<TableHead
 										className={cn(
 											"min-w-(--cell-min-width)",
+											header.column.columnDef.meta?.fitContent &&
+												"w-px min-w-0 whitespace-nowrap",
 											header.column.columnDef.meta?.columnClassName,
 										)}
 										key={header.id}
@@ -85,6 +88,8 @@ export const DataTable = <TData extends RowData,>({
 											className={cn(
 												"min-w-(--cell-min-width)",
 												cell.column.columnDef.meta?.primary && "w-full",
+												cell.column.columnDef.meta?.fitContent &&
+													"w-px min-w-0 whitespace-nowrap",
 												cell.column.columnDef.meta?.columnClassName,
 											)}
 											key={cell.id}

@@ -33,3 +33,10 @@ export const randInt = (opts?: { min?: number; max?: number }) => {
 
 	return Math.floor(Math.random() * (max - min + 1) + min);
 };
+
+export const getInitials = (firstName: string, lastName?: string | null) => {
+	const first = firstName.trim().at(0) ?? "";
+	const last = lastName?.trim().at(0) ?? "";
+
+	return `${first}${last}`.toUpperCase();
+};
