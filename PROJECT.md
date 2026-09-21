@@ -17,7 +17,9 @@ auth via better-auth (email OTP, no passwords).
 - **Tailwind v4**, shadcn/radix-based UI kit (hand-copied components, not the shadcn CLI)
 - **Zod v4** for input/schema validation, **react-hook-form** for forms
 - **jotai** (cross-tree UI state like breadcrumbs), **zustand** (small global UI store)
-- **@tanstack/react-table** for the tickets table
+- **@tanstack/react-table** (v9) — shared `DataTable`/`useDataTable` primitive
+  (`src/components/ui/data-table.tsx`) used by both the tickets and users
+  tables, with filtering/faceting/visibility/row-selection features enabled
 - **bun** as package manager/runtime; `docker compose` for local Postgres
 
 The whole stack was hand-assembled file by file rather than via `create-t3-app`
@@ -288,7 +290,8 @@ there once and both the sidebar and cmdk pick it up.
     `trpc.tickets.create.useMutation`, redirects to the new ticket on success.
   - `/users` — server-rendered directory of the org's members, fetches via
     `api.users.list()`, renders `<UsersTable>` (currently just a `name`
-    column linking to `/users/[id]`, which doesn't exist yet).
+    column linking to `/users/[id]`, which doesn't exist yet, plus the
+    shared `DataTableToolbar` for search/export).
 - The command palette links to `/profile`, but the page doesn't exist yet —
   a known gap, not a broken link by accident.
 - `api/auth/[...all]` — better-auth's catch-all handler (`toNextJsHandler`).
@@ -308,9 +311,34 @@ there once and both the sidebar and cmdk pick it up.
   convention — plain `className`/`cn()` strings there already get full
   Tailwind tooling for free.
 - `src/components/ui/*` — a hand-copied shadcn/radix-based primitive set
-  (button, card, dialog, dropdown, sidebar, table, input-otp, command palette
-  via `cmdk`, etc.), not pulled in via the shadcn CLI (`components.json`
-  exists mainly for editor tooling/import aliases).
+  (button, card, dialog, dropdown, popover, sidebar, table, input-otp,
+  command palette via `cmdk`, etc.), not pulled in via the shadcn CLI
+  (`components.json` exists mainly for editor tooling/import aliases).
+- `src/components/ui/data-table.tsx` — the generic table primitive:
+  `dataTableFeatures` wires up `@tanstack/react-table`'s column filtering,
+  global filtering, column faceting, column visibility, and row selection
+  features (plus `includesString`/`arrHas` filter fns); `useDataTable({
+  columns, data })` builds a table instance from those features, and
+  `<DataTable table={table} />` renders it. Column `meta` supports
+  `primary`/`fitContent`/`columnClassName`/`getHref` (declared via module
+  augmentation) for the primary-column-links-to-detail-page pattern.
+- `src/components/ui/data-table-toolbar.tsx` — `<DataTableToolbar table
+  searchPlaceholder filters exportFileName children? />`: a debounced global
+  search input (`useDebouncedCallback`), optional per-column faceted filters,
+  a "Reset" button (shown once any filter/search is active), a selected-row
+  count, a CSV/JSON export button (exports the selection if any rows are
+  selected, otherwise the filtered rows — see `src/lib/export.ts`), and the
+  column-visibility "View" menu. `children` is an extension point for
+  page-specific actions (e.g. a "New ticket" button) rendered alongside
+  Export/View.
+  - `data-table-faceted-filter.tsx` — Popover + Command + Checkbox multi-select
+    filter for one column, with per-option counts from
+    `column.getFacetedUniqueValues()`. Pairs with `filterFn: "arrHas"` on the
+    target column.
+  - `data-table-view-options.tsx` — DropdownMenu + Checkbox column-visibility
+    toggle, listing every column where `getCanHide()` is true.
+- `src/lib/export.ts` — client-side `downloadCsv`/`downloadJson` (Blob + an
+  anchor click, no dependency); used by the toolbar's export button.
 - `src/components/app-sidebar.tsx` / `app-header.tsx` — the app chrome.
   Header hosts the breadcrumb trail, a search button that opens the command
   palette, and a "new ticket" shortcut. Sidebar nav items come from
@@ -326,9 +354,11 @@ there once and both the sidebar and cmdk pick it up.
   see the cmdk recipe above for adding a new one), and a "Settings" group.
   Emoji search/Calculator/Billing/Settings entries are still placeholder
   items with no destination yet.
-- `src/components/tickets-table.tsx` — `@tanstack/react-table` columns for
+- `src/components/tickets-table.tsx` — `DataTable` columns for row selection,
   title (links to detail page), relative last-active time (`date-fns`), and
-  a status badge with variant-per-status color mapping.
+  a status badge with variant-per-status color mapping (`filterFn: "arrHas"`
+  for the toolbar's status facet). Wraps `<DataTable>` with
+  `<DataTableToolbar>` (search + status filter + export).
 
 State: `store.app.ts` (zustand) only holds `cmdkIsOpen` — deliberately tiny,
 since most state is server data via tRPC/React Query or ephemeral UI state

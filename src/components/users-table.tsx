@@ -4,7 +4,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { getInitials } from "~/lib/utils";
 import type { RouterOutputs } from "~/trpc/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "~/ui/avatar";
-import { DataTable, dataTableFeatures } from "~/ui/data-table";
+import { DataTable, dataTableFeatures, useDataTable } from "~/ui/data-table";
+import { DataTableToolbar } from "~/ui/data-table-toolbar";
 
 type User = RouterOutputs["users"]["list"][number];
 
@@ -24,6 +25,7 @@ export const UsersTable = ({ users }: { users: User[] }) => {
 			meta: {
 				fitContent: true,
 			},
+			enableGlobalFilter: false,
 		},
 		{
 			accessorKey: "name",
@@ -35,5 +37,16 @@ export const UsersTable = ({ users }: { users: User[] }) => {
 		},
 	];
 
-	return <DataTable columns={columns} data={users} />;
+	const table = useDataTable({ columns, data: users });
+
+	return (
+		<div className="space-y-4">
+			<DataTableToolbar
+				table={table}
+				searchPlaceholder="Search users..."
+				exportFileName="users"
+			/>
+			<DataTable table={table} />
+		</div>
+	);
 };
