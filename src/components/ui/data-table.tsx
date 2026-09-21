@@ -38,10 +38,10 @@ interface DataTableProps<TData, TValue> {
 	data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export const DataTable = <TData, TValue,>({
 	columns,
 	data,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TData, TValue>) => {
 	"use no memo";
 	const table = useReactTable({
 		data,
@@ -125,4 +125,4 @@ export function DataTable<TData, TValue>({
 			</Table>
 		</div>
 	);
-}
+};
