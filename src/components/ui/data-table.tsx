@@ -4,8 +4,18 @@ import {
 	Cell,
 	ColumnDef,
 	RowData,
-	tableFeatures,
 	TableFeatures,
+	columnFacetingFeature,
+	columnFilteringFeature,
+	columnVisibilityFeature,
+	createFacetedRowModel,
+	createFacetedUniqueValues,
+	createFilteredRowModel,
+	filterFn_arrHas,
+	filterFn_includesString,
+	globalFilteringFeature,
+	rowSelectionFeature,
+	tableFeatures,
 	useTable,
 } from "@tanstack/react-table";
 import Link from "next/link";
@@ -35,23 +45,43 @@ declare module "@tanstack/react-table" {
 	}
 }
 
-export const dataTableFeatures = tableFeatures({});
+export const dataTableFeatures = tableFeatures({
+	columnFilteringFeature,
+	globalFilteringFeature,
+	columnFacetingFeature,
+	columnVisibilityFeature,
+	rowSelectionFeature,
+	filteredRowModel: createFilteredRowModel(),
+	facetedRowModel: createFacetedRowModel(),
+	facetedUniqueValues: createFacetedUniqueValues(),
+	filterFns: {
+		includesString: filterFn_includesString,
+		arrHas: filterFn_arrHas,
+	},
+});
 
-interface DataTableProps<TData extends RowData> {
-	columns: ColumnDef<typeof dataTableFeatures, TData>[];
-	data: TData[];
-}
-
-export const DataTable = <TData extends RowData>({
+export const useDataTable = <TData extends RowData>({
 	columns,
 	data,
-}: DataTableProps<TData>) => {
-	const table = useTable({
+}: {
+	columns: ColumnDef<typeof dataTableFeatures, TData>[];
+	data: TData[];
+}) => {
+	return useTable({
 		features: dataTableFeatures,
 		data,
 		columns,
+		globalFilterFn: "includesString",
 	});
+};
 
+interface DataTableProps<TData extends RowData> {
+	table: ReturnType<typeof useDataTable<TData>>;
+}
+
+export const DataTable = <TData extends RowData>({
+	table,
+}: DataTableProps<TData>) => {
 	return (
 		<div className="rounded-md border">
 			<Table className="[--cell-min-width:--spacing(32)]">
@@ -81,8 +111,11 @@ export const DataTable = <TData extends RowData>({
 				<TableBody>
 					{table.getRowModel().rows?.length ? (
 						table.getRowModel().rows.map((row) => (
-							<TableRow key={row.id}>
-								{row.getAllCells().map((cell) => {
+							<TableRow
+								key={row.id}
+								data-state={row.getIsSelected() ? "selected" : undefined}
+							>
+								{row.getVisibleCells().map((cell) => {
 									return (
 										<TableCell
 											className={cn(
@@ -111,7 +144,10 @@ export const DataTable = <TData extends RowData>({
 						))
 					) : (
 						<TableRow>
-							<TableCell colSpan={columns.length} className="h-24 text-center">
+							<TableCell
+								colSpan={table.getVisibleLeafColumns().length}
+								className="h-24 text-center"
+							>
 								No results.
 							</TableCell>
 						</TableRow>
