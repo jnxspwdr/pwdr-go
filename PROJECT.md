@@ -24,7 +24,9 @@ auth via better-auth (email OTP, no passwords).
 
 The whole stack was hand-assembled file by file rather than via `create-t3-app`
 or the better-auth/shadcn CLIs — see git history / commit `aecd3bc` for the
-migration off an earlier fake JSON+zustand backend.
+migration off an earlier fake JSON+zustand backend. The one exception is the
+shadcn MCP server (below) — set up via `shadcn`'s own CLI, since it's tooling
+config, not app code.
 
 **Config files:**
 
@@ -38,6 +40,12 @@ migration off an earlier fake JSON+zustand backend.
 - `drizzle.config.ts` — postgresql dialect, schema `src/server/db/schema.ts`,
   migrations output to `./drizzle` (unused today — see `db:push` below).
 - `postcss.config.mjs` — just `@tailwindcss/postcss`.
+- `.mcp.json` — the official shadcn MCP server (`npx shadcn@latest mcp`,
+  set up via `bunx shadcn@latest mcp init --client claude`; `shadcn` itself
+  is a devDependency now, only for this). Lets Claude Code browse/search
+  the real shadcn registry and pull the actual `new-york` source for a
+  component instead of reconstructing it from memory — prefer this when
+  adding a new `src/components/ui/*` primitive.
 - `prettier.config.mjs` — `useTabs: true`; `prettier-plugin-tailwindcss` with
   `tailwindStylesheet: "./src/app/globals.css"` (required for Tailwind v4,
   no JS config to auto-detect) and `tailwindFunctions: ["tw"]` (see
