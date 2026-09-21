@@ -1,15 +1,12 @@
 "use client";
 
 import {
-	Column,
-	ColumnDef,
-	flexRender,
-	getCoreRowModel,
-	RowData,
-	Table as TSTable,
-	TableFeature,
-	useReactTable,
 	Cell,
+	ColumnDef,
+	RowData,
+	tableFeatures,
+	TableFeatures,
+	useTable,
 } from "@tanstack/react-table";
 import Link from "next/link";
 import React from "react";
@@ -24,29 +21,34 @@ import {
 } from "~/ui/table";
 
 declare module "@tanstack/react-table" {
-	interface ColumnMeta<TData extends RowData, TValue> {
+	interface ColumnMeta<
+		TFeatures extends TableFeatures,
+		TData extends RowData,
+		TValue,
+	> {
 		columnClassName?: string;
 		primary?: boolean;
 		getHref?: (
-			cell: Cell<TData, TValue>,
+			cell: Cell<TFeatures, TData, TValue>,
 		) => React.ComponentPropsWithoutRef<typeof Link>["href"];
 	}
 }
 
-interface DataTableProps<TData, TValue> {
-	columns: ColumnDef<TData, TValue>[];
+export const dataTableFeatures = tableFeatures({});
+
+interface DataTableProps<TData extends RowData> {
+	columns: ColumnDef<typeof dataTableFeatures, TData>[];
 	data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends RowData>({
 	columns,
 	data,
-}: DataTableProps<TData, TValue>) {
-	"use no memo";
-	const table = useReactTable({
+}: DataTableProps<TData>) {
+	const table = useTable({
+		features: dataTableFeatures,
 		data,
 		columns,
-		getCoreRowModel: getCoreRowModel(),
 	});
 
 	return (
@@ -64,12 +66,9 @@ export function DataTable<TData, TValue>({
 										)}
 										key={header.id}
 									>
-										{header.isPlaceholder
-											? null
-											: flexRender(
-													header.column.columnDef.header,
-													header.getContext(),
-												)}
+										{header.isPlaceholder ? null : (
+											<table.FlexRender header={header} />
+										)}
 									</TableHead>
 								);
 							})}
@@ -79,11 +78,8 @@ export function DataTable<TData, TValue>({
 				<TableBody>
 					{table.getRowModel().rows?.length ? (
 						table.getRowModel().rows.map((row) => (
-							<TableRow
-								key={row.id}
-								data-state={row.getIsSelected() && "selected"}
-							>
-								{row.getVisibleCells().map((cell) => {
+							<TableRow key={row.id}>
+								{row.getAllCells().map((cell) => {
 									return (
 										<TableCell
 											className={cn(
@@ -98,16 +94,10 @@ export function DataTable<TData, TValue>({
 													className="hover:underline"
 													href={cell.column.columnDef.meta?.getHref(cell)}
 												>
-													{flexRender(
-														cell.column.columnDef.cell,
-														cell.getContext(),
-													)}
+													<table.FlexRender cell={cell} />
 												</Link>
 											) : (
-												flexRender(
-													cell.column.columnDef.cell,
-													cell.getContext(),
-												)
+												<table.FlexRender cell={cell} />
 											)}
 										</TableCell>
 									);
