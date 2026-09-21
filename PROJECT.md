@@ -1,4 +1,4 @@
-# pwdr GO — app writeup
+# pwdr GO — project overview
 
 > Keep this in sync. Whenever the app changes in a way that would make a
 > section below wrong, update that section in the same change — don't let
@@ -154,7 +154,7 @@ source of truth, importable from both client and server code (unlike
     `FORBIDDEN` (naming the required plan) unless
     `planHasFeature(ctx.org.plan, feature)`. Not used by any router yet —
     Reports (planned) will be the first consumer.
-- `root.ts` — `appRouter` mounts `tickets` and `organization`.
+- `root.ts` — `appRouter` mounts `tickets`, `organization`, and `users`.
 - `routers/tickets.ts`:
   - `list` — all tickets for the caller's active org, with `reportedBy`/`assignedTo` joined.
   - `byId` — single ticket, scoped to the caller's org (cross-org IDs 404, not leak).
@@ -164,6 +164,12 @@ source of truth, importable from both client and server code (unlike
 - `routers/organization.ts`:
   - `current` — the caller's active org (`id`, `name`, `plan`). Only
     consumer so far is manual verification; no UI reads it yet.
+- `routers/users.ts`:
+  - `list` — every `user` in the caller's active org, queried through
+    `member` (`with: { user: true }`), per the "user is not org-scoped"
+    rule below.
+  - `byId` — single user, scoped to the caller's org via `member`
+    (cross-org IDs 404, not leak, same pattern as `tickets.byId`).
 
 **Two client entry points**, both typed against `AppRouter`:
 
@@ -232,8 +238,11 @@ needing access to more than one org gets a second, separate `user` row
     errors are caught and mapped to Next's `notFound()`.
   - `/tickets/new` — client-side form (react-hook-form + zod), calls
     `trpc.tickets.create.useMutation`, redirects to the new ticket on success.
-- Sidebar links to `/users` and the command palette links to `/profile`, but
-  neither page exists yet — known gaps, not broken links by accident.
+  - `/users` — server-rendered directory of the org's members, fetches via
+    `api.users.list()`, renders `<UsersTable>` (currently just a `name`
+    column linking to `/users/[id]`, which doesn't exist yet).
+- The command palette links to `/profile`, but the page doesn't exist yet —
+  a known gap, not a broken link by accident.
 - `api/auth/[...all]` — better-auth's catch-all handler (`toNextJsHandler`).
 - `api/trpc/[trpc]` — tRPC fetch adapter handler.
 
@@ -290,10 +299,8 @@ that org's admin, so manual sign-in testing stays predictable.
 - **Reports** — KPI/graph dashboard (cases per user, "most troublesome"
   user, ticket volume over time, etc). Meant to be the first consumer of
   `requiresPlanFeature("reports")` — free-plan orgs won't have access.
-- **`/users`** — the sidebar already links here
-  (`src/components/app-sidebar.tsx`, `MAIN_NAV_ITEMS`), but the page
-  doesn't exist yet and scope isn't defined beyond "a directory of the
-  org's members."
+- **`/users/[id]`** — `/users` links each row to it, but no detail page
+  exists yet (mirrors `/tickets/[ticketId]`'s pattern once built).
 
 ## Known gaps (intentionally out of scope, not forgotten)
 
