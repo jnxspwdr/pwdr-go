@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { notFound } from "next/navigation";
 import { ServerCrumbs } from "~/components/breadcrumb-portal";
 import { api } from "~/trpc/server";
@@ -12,10 +11,7 @@ export default async function TicketDetailsPage({
 }) {
 	const { ticketId } = await params;
 
-	const ticket = await api.tickets.byId({ id: ticketId }).catch((error) => {
-		if (error instanceof TRPCError && error.code === "NOT_FOUND") return null;
-		throw error;
-	});
+	const ticket = await api.tickets.byId({ id: ticketId });
 
 	if (!ticket) notFound();
 
