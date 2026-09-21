@@ -320,8 +320,9 @@ there once and both the sidebar and cmdk pick it up.
   features (plus `includesString`/`arrHas` filter fns); `useDataTable({
   columns, data })` builds a table instance from those features, and
   `<DataTable table={table} />` renders it. Column `meta` supports
-  `primary`/`fitContent`/`columnClassName`/`getHref` (declared via module
-  augmentation) for the primary-column-links-to-detail-page pattern.
+  `primary`/`fitContent`/`hideHeader`/`columnClassName`/`getHref` (declared
+  via module augmentation) for the primary-column-links-to-detail-page
+  pattern.
 - `src/components/ui/data-table-toolbar.tsx` — `<DataTableToolbar table
   searchPlaceholder filters exportFileName children? />`: a debounced global
   search input (`useDebouncedCallback`), optional per-column faceted filters,
