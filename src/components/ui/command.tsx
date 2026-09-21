@@ -13,6 +13,12 @@ import {
 } from "~/components/ui/dialog";
 import { cn } from "~/lib/utils";
 
+// Set by CommandDialog so CommandItem can auto-close the dialog on select.
+// Plain Command usage (no dialog) leaves this null and skips auto-close.
+const CommandDialogCloseContext = React.createContext<(() => void) | null>(
+	null
+);
+
 function Command({
 	className,
 	...props
@@ -35,6 +41,7 @@ function CommandDialog({
 	children,
 	className,
 	hideCloseButton = true,
+	onOpenChange,
 	...props
 }: React.ComponentProps<typeof Dialog> & {
 	title?: string;
@@ -42,8 +49,13 @@ function CommandDialog({
 	className?: string;
 	hideCloseButton?: boolean;
 }) {
+	const close = React.useCallback(
+		() => onOpenChange?.(false),
+		[onOpenChange]
+	);
+
 	return (
-		<Dialog {...props}>
+		<Dialog onOpenChange={onOpenChange} {...props}>
 			<DialogHeader className="sr-only">
 				<DialogTitle>{title}</DialogTitle>
 				<DialogDescription>{description}</DialogDescription>
@@ -52,7 +64,9 @@ function CommandDialog({
 				className={cn("overflow-hidden p-1 bg-border border-0", className)}
 				hideCloseButton={hideCloseButton}
 			>
-				<Command>{children}</Command>
+				<CommandDialogCloseContext.Provider value={close}>
+					<Command>{children}</Command>
+				</CommandDialogCloseContext.Provider>
 			</DialogContent>
 		</Dialog>
 	);
@@ -139,8 +153,13 @@ function CommandSeparator({
 
 function CommandItem({
 	className,
+	onSelect,
 	...props
 }: React.ComponentProps<typeof CommandPrimitive.Item>) {
+	// Auto-close the enclosing CommandDialog (if any) on select, after the
+	// item's own onSelect runs.
+	const closeDialog = React.useContext(CommandDialogCloseContext);
+
 	return (
 		<CommandPrimitive.Item
 			data-slot="command-item"
@@ -148,6 +167,14 @@ function CommandItem({
 				"data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground group/command-item [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
 				className
 			)}
+			onSelect={
+				closeDialog
+					? (value) => {
+							onSelect?.(value);
+							closeDialog();
+						}
+					: onSelect
+			}
 			{...props}
 		/>
 	);
