@@ -1,13 +1,9 @@
 "use client";
 
 import {
-	LayoutDashboard,
-	LucideIcon,
 	PanelLeftCloseIcon,
 	PanelLeftIcon,
 	PanelLeftOpenIcon,
-	Users,
-	Wrench,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -24,32 +20,7 @@ import {
 	useSidebar,
 } from "~/components/ui/sidebar";
 import { authClient } from "~/lib/auth-client";
-
-const MAIN_NAV_ITEMS: {
-	id: number;
-	title: string;
-	icon: LucideIcon;
-	href: string;
-}[] = [
-	{
-		id: 1,
-		title: "Dashboard",
-		href: "/dashboard",
-		icon: LayoutDashboard,
-	},
-	{
-		id: 2,
-		title: "Tickets",
-		href: "/tickets",
-		icon: Wrench,
-	},
-	{
-		id: 3,
-		title: "Users",
-		href: "/users",
-		icon: Users,
-	},
-];
+import { MAIN_NAV_ITEMS } from "~/lib/nav";
 
 export const AppSidebar = () => {
 	const pathname = usePathname();
@@ -68,7 +39,7 @@ export const AppSidebar = () => {
 					<SidebarMenu>
 						{MAIN_NAV_ITEMS.map((item) => {
 							return (
-								<SidebarMenuItem key={item.id}>
+								<SidebarMenuItem key={item.href}>
 									<SidebarMenuButton
 										asChild
 										tooltip={item.title}

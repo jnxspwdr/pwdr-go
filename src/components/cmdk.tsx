@@ -9,6 +9,7 @@ import {
 	Smile,
 	User,
 	Wrench,
+	type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -24,15 +25,75 @@ import {
 	CommandShortcut,
 } from "~/components/ui/command";
 import { Separator } from "~/components/ui/separator";
+import { MAIN_NAV_ITEMS } from "~/lib/nav";
 import { useAppStore } from "~/store.app";
+import { trpc } from "~/trpc/react";
+
+// Minimum characters typed before we hit the search endpoint — short
+// prefixes are rarely useful and would just spam the DB.
+const SEARCH_MIN_LENGTH = 2;
+// How long to wait after the user stops typing before searching.
+const SEARCH_DEBOUNCE_MS = 150;
+
+// A single result group in the palette's live search section (e.g.
+// "Tickets", "Users"). Generic over the item shape so each call site below
+// stays fully typed — see DETAIL_PAGE_SEARCH_GROUPS for how new detail
+// pages register here.
+function SearchResultGroup<T extends { id: string }>({
+	heading,
+	icon: Icon,
+	items,
+	getHref,
+	getLabel,
+	getSublabel,
+}: {
+	heading: string;
+	icon: LucideIcon;
+	items: T[] | undefined;
+	getHref: (item: T) => string;
+	getLabel: (item: T) => string;
+	getSublabel?: (item: T) => string | undefined;
+}) {
+	if (!items || items.length === 0) return null;
+
+	return (
+		<CommandGroup heading={heading}>
+			{items.map((item) => (
+				<CommandItem key={item.id} asChild value={`${heading}-${item.id}`}>
+					<Link href={getHref(item)}>
+						<Icon />
+						<span>{getLabel(item)}</span>
+						{getSublabel && (
+							<CommandShortcut>{getSublabel(item)}</CommandShortcut>
+						)}
+					</Link>
+				</CommandItem>
+			))}
+		</CommandGroup>
+	);
+}
 
 export const Cmdk = () => {
 	const open = useAppStore((state) => state.cmdkIsOpen);
 	const setOpen = useAppStore((state) => state.setCmdkIsOpen);
 	const [cmdkInput, setCmdkInput] = React.useState("");
+	const [debouncedQuery, setDebouncedQuery] = React.useState("");
 
 	const [linkIsSelected, setLinkIsSelected] = React.useState(false);
 	const listRef = React.useRef<HTMLDivElement>(null);
+
+	React.useEffect(() => {
+		const handle = setTimeout(() => {
+			setDebouncedQuery(cmdkInput.trim());
+		}, SEARCH_DEBOUNCE_MS);
+
+		return () => clearTimeout(handle);
+	}, [cmdkInput]);
+
+	const { data: searchResults } = trpc.search.global.useQuery(
+		{ query: debouncedQuery },
+		{ enabled: open && debouncedQuery.length >= SEARCH_MIN_LENGTH }
+	);
 
 	React.useEffect(() => {
 		// ugly hack to ensure the listRef stuff works properly
@@ -45,7 +106,7 @@ export const Cmdk = () => {
 				);
 			}
 		});
-	}, [open, cmdkInput]);
+	}, [open, cmdkInput, searchResults]);
 
 	React.useEffect(() => {
 		if (listRef.current) {
@@ -121,11 +182,17 @@ export const Cmdk = () => {
 		};
 	}, [setOpen, linkIsSelected]);
 
+	const showSearchResults = debouncedQuery.length >= SEARCH_MIN_LENGTH;
+
 	return (
 		<CommandDialog
 			open={open}
 			onOpenChange={(open) => {
 				setOpen(open);
+				if (!open) {
+					setCmdkInput("");
+					setDebouncedQuery("");
+				}
 			}}
 		>
 			<CommandInput
@@ -135,13 +202,18 @@ export const Cmdk = () => {
 			/>
 			<CommandList ref={listRef}>
 				<CommandEmpty>No results found.</CommandEmpty>
+				<CommandGroup heading="Pages">
+					{MAIN_NAV_ITEMS.map((item) => (
+						<CommandItem key={item.href} asChild>
+							<Link href={item.href}>
+								<item.icon />
+								<span>{item.title}</span>
+							</Link>
+						</CommandItem>
+					))}
+				</CommandGroup>
+				<CommandSeparator />
 				<CommandGroup>
-					<CommandItem asChild>
-						<Link href="/tickets">
-							<Wrench />
-							<span>Tickets</span>
-						</Link>
-					</CommandItem>
 					<CommandItem>
 						<Smile />
 						<span>Search Emoji</span>
@@ -151,6 +223,27 @@ export const Cmdk = () => {
 						<span>Calculator</span>
 					</CommandItem>
 				</CommandGroup>
+				{showSearchResults && (
+					<>
+						<CommandSeparator />
+						<SearchResultGroup
+							heading="Tickets"
+							icon={Wrench}
+							items={searchResults?.tickets}
+							getHref={(ticket) => `/tickets/${ticket.id}`}
+							getLabel={(ticket) => ticket.title}
+							getSublabel={(ticket) => ticket.ticketNumber}
+						/>
+						<SearchResultGroup
+							heading="Users"
+							icon={User}
+							items={searchResults?.users}
+							getHref={(user) => `/users/${user.id}`}
+							getLabel={(user) => user.name}
+							getSublabel={(user) => user.email}
+						/>
+					</>
+				)}
 				<CommandSeparator />
 				<CommandGroup heading="Settings">
 					<CommandItem asChild>

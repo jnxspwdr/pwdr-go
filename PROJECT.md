@@ -154,7 +154,7 @@ source of truth, importable from both client and server code (unlike
     `FORBIDDEN` (naming the required plan) unless
     `planHasFeature(ctx.org.plan, feature)`. Not used by any router yet —
     Reports (planned) will be the first consumer.
-- `root.ts` — `appRouter` mounts `tickets`, `organization`, and `users`.
+- `root.ts` — `appRouter` mounts `tickets`, `organization`, `users`, and `search`.
 - `routers/tickets.ts`:
   - `list` — all tickets for the caller's active org, with `reportedBy`/`assignedTo` joined.
   - `byId` — single ticket, scoped to the caller's org (cross-org IDs 404, not leak).
@@ -170,6 +170,11 @@ source of truth, importable from both client and server code (unlike
     rule below.
   - `byId` — single user, scoped to the caller's org via `member`
     (cross-org IDs 404, not leak, same pattern as `tickets.byId`).
+- `routers/search.ts`:
+  - `global` — org-scoped `ilike` search across tickets
+    (`title`/`ticketNumber`) and users (`name`/`email`), capped at 5 results
+    per entity. Backs the command palette's live search groups (below) —
+    see "Adding a searchable detail page to cmdk" for how to extend it.
 
 **Two client entry points**, both typed against `AppRouter`:
 
@@ -224,6 +229,29 @@ needing access to more than one org gets a second, separate `user` row
 (separate login) rather than a second membership on the same row. See
 `createPwdrUser` / `ORG_DEFS` in `src/data/seed.ts`.
 
+## Adding a searchable detail page to cmdk (recipe)
+
+The command palette (`src/components/cmdk.tsx`) has two kinds of entries:
+static pages (mirrored from the sidebar) and live search results (backed by
+`routers/search.ts`). To make a new detail page (e.g. a future `/devices/[id]`)
+searchable from cmdk:
+
+1. **Server**: add a branch to `search.global` in `routers/search.ts` —
+   `Promise.all` alongside the existing ticket/user queries, org-scoped and
+   capped at `RESULT_LIMIT`. Add the new key to the returned object.
+2. **Client**: in `cmdk.tsx`, add one `<SearchResultGroup>` call for the new
+   key, passing `heading`, `icon`, `items` (from the query result), and
+   `getHref`/`getLabel`/`getSublabel` mappers. `SearchResultGroup` is a
+   small generic helper already in that file — it renders nothing when
+   `items` is empty, so no extra guard is needed.
+
+No other wiring required — `trpc.search.global.useQuery` already fires
+(debounced) whenever the palette input is 2+ characters.
+
+**Static top-level pages** (the "Pages" group in cmdk, and the sidebar) are
+driven by one shared array, `MAIN_NAV_ITEMS` in `src/lib/nav.ts` — add a page
+there once and both the sidebar and cmdk pick it up.
+
 ## Routing (`src/app/`)
 
 - `/` — redirects to `/dashboard`.
@@ -254,14 +282,19 @@ needing access to more than one org gets a second, separate `user` row
   exists mainly for editor tooling/import aliases).
 - `src/components/app-sidebar.tsx` / `app-header.tsx` — the app chrome.
   Header hosts the breadcrumb trail, a search button that opens the command
-  palette, and a "new ticket" shortcut.
+  palette, and a "new ticket" shortcut. Sidebar nav items come from
+  `MAIN_NAV_ITEMS` (`src/lib/nav.ts`), shared with the cmdk "Pages" group.
 - `src/components/breadcrumb-portal.tsx` — breadcrumbs are set imperatively
   from any page via `useCrumbs()` (client) or `<ServerCrumbs>` (server
   component wrapper), backed by a jotai atom, and rendered in the header via
   `<Breadcrumbs>`. Supports nested/dropdown crumb segments.
 - `src/components/cmdk.tsx` — ⌘K command palette (`cmdk` primitive), toggled
-  via the zustand store (`src/store.app.ts`). Some entries (Emoji search,
-  Calculator, Billing, Settings) are placeholder items with no destination yet.
+  via the zustand store (`src/store.app.ts`). Three sections: a "Pages" group
+  (from `MAIN_NAV_ITEMS`), live search-result groups (tickets/users, via
+  `trpc.search.global`, debounced, shown once the query is 2+ characters —
+  see the cmdk recipe above for adding a new one), and a "Settings" group.
+  Emoji search/Calculator/Billing/Settings entries are still placeholder
+  items with no destination yet.
 - `src/components/tickets-table.tsx` — `@tanstack/react-table` columns for
   title (links to detail page), relative last-active time (`date-fns`), and
   a status badge with variant-per-status color mapping.
@@ -301,6 +334,9 @@ that org's admin, so manual sign-in testing stays predictable.
   `requiresPlanFeature("reports")` — free-plan orgs won't have access.
 - **`/users/[id]`** — `/users` links each row to it, but no detail page
   exists yet (mirrors `/tickets/[ticketId]`'s pattern once built).
+- **cmdk "recently opened" / result ranking** — the command palette's search
+  results (`routers/search.ts`) are unordered beyond the DB query's own
+  ordering; no per-user recency tracking or relevance scoring yet.
 
 ## Known gaps (intentionally out of scope, not forgotten)
 
