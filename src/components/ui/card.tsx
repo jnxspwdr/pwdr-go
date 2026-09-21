@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { cn } from "~/lib/utils";
+import { cn } from "cn";
 
 const Card = ({ className, ...props }: React.ComponentProps<"div">) => {
 	return (
@@ -38,7 +38,10 @@ const CardTitle = ({ className, ...props }: React.ComponentProps<"div">) => {
 	);
 };
 
-const CardDescription = ({ className, ...props }: React.ComponentProps<"div">) => {
+const CardDescription = ({
+	className,
+	...props
+}: React.ComponentProps<"div">) => {
 	return (
 		<div
 			data-slot="card-description"

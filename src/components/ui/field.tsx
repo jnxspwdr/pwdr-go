@@ -5,9 +5,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import React from "react";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
-import { cn } from "~/lib/utils";
+import { cn } from "cn";
 
-const FieldSet = ({ className, ...props }: React.ComponentProps<"fieldset">) => {
+const FieldSet = ({
+	className,
+	...props
+}: React.ComponentProps<"fieldset">) => {
 	return (
 		<fieldset
 			data-slot="field-set"
@@ -172,7 +175,10 @@ const FieldTitle = ({ className, ...props }: React.ComponentProps<"div">) => {
 	);
 };
 
-const FieldDescription = ({ className, ...props }: React.ComponentProps<"p">) => {
+const FieldDescription = ({
+	className,
+	...props
+}: React.ComponentProps<"p">) => {
 	return (
 		<p
 			data-slot="field-description"

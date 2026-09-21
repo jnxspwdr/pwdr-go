@@ -22,7 +22,7 @@ import {
 	TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { useIsMobile } from "~/hooks/use-mobile";
-import { cn } from "~/lib/utils";
+import { cn } from "cn";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -278,7 +278,10 @@ const SidebarTrigger = ({
 	);
 };
 
-const SidebarRail = ({ className, ...props }: React.ComponentProps<"button">) => {
+const SidebarRail = ({
+	className,
+	...props
+}: React.ComponentProps<"button">) => {
 	const { toggleSidebar } = useSidebar();
 
 	return (
@@ -341,7 +344,10 @@ const SidebarInput = ({
 	);
 };
 
-const SidebarHeader = ({ className, ...props }: React.ComponentProps<"div">) => {
+const SidebarHeader = ({
+	className,
+	...props
+}: React.ComponentProps<"div">) => {
 	return (
 		<div
 			data-slot="sidebar-header"
@@ -352,7 +358,10 @@ const SidebarHeader = ({ className, ...props }: React.ComponentProps<"div">) => 
 	);
 };
 
-const SidebarFooter = ({ className, ...props }: React.ComponentProps<"div">) => {
+const SidebarFooter = ({
+	className,
+	...props
+}: React.ComponentProps<"div">) => {
 	return (
 		<div
 			data-slot="sidebar-footer"
@@ -377,7 +386,10 @@ const SidebarSeparator = ({
 	);
 };
 
-const SidebarContent = ({ className, ...props }: React.ComponentProps<"div">) => {
+const SidebarContent = ({
+	className,
+	...props
+}: React.ComponentProps<"div">) => {
 	return (
 		<div
 			data-slot="sidebar-content"
@@ -471,7 +483,10 @@ const SidebarMenu = ({ className, ...props }: React.ComponentProps<"ul">) => {
 	);
 };
 
-const SidebarMenuItem = ({ className, ...props }: React.ComponentProps<"li">) => {
+const SidebarMenuItem = ({
+	className,
+	...props
+}: React.ComponentProps<"li">) => {
 	return (
 		<li
 			data-slot="sidebar-menu-item"
@@ -648,7 +663,10 @@ const SidebarMenuSkeleton = ({
 	);
 };
 
-const SidebarMenuSub = ({ className, ...props }: React.ComponentProps<"ul">) => {
+const SidebarMenuSub = ({
+	className,
+	...props
+}: React.ComponentProps<"ul">) => {
 	return (
 		<ul
 			data-slot="sidebar-menu-sub"

@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-table";
 import Link from "next/link";
 import React from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "cn";
 import {
 	Table,
 	TableBody,

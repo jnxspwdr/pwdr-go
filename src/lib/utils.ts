@@ -1,10 +1,3 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-	return twMerge(clsx(inputs));
-}
-
 // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 export const shuffle = <T>(array: Array<T>) => {
 	const newArray = array;

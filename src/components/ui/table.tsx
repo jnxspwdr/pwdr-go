@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { cn } from "~/lib/utils";
+import { cn } from "cn";
 
 const Table = ({ className, ...props }: React.ComponentProps<"table">) => {
 	return (
@@ -19,7 +19,10 @@ const Table = ({ className, ...props }: React.ComponentProps<"table">) => {
 	);
 };
 
-const TableHeader = ({ className, ...props }: React.ComponentProps<"thead">) => {
+const TableHeader = ({
+	className,
+	...props
+}: React.ComponentProps<"thead">) => {
 	return (
 		<thead
 			data-slot="table-header"
@@ -39,7 +42,10 @@ const TableBody = ({ className, ...props }: React.ComponentProps<"tbody">) => {
 	);
 };
 
-const TableFooter = ({ className, ...props }: React.ComponentProps<"tfoot">) => {
+const TableFooter = ({
+	className,
+	...props
+}: React.ComponentProps<"tfoot">) => {
 	return (
 		<tfoot
 			data-slot="table-footer"
