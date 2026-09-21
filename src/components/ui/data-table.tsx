@@ -89,7 +89,7 @@ export const DataTable = <TData extends RowData>({
 												"min-w-(--cell-min-width)",
 												cell.column.columnDef.meta?.primary && "w-full",
 												cell.column.columnDef.meta?.fitContent &&
-													"w-px min-w-0 whitespace-nowrap",
+													"w-px min-w-0 max-w-none whitespace-nowrap text-clip",
 												cell.column.columnDef.meta?.columnClassName,
 											)}
 											key={cell.id}
