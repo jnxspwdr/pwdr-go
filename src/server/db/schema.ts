@@ -32,23 +32,6 @@ export const user = pgTable("user", {
 	phoneNumber: text("phone_number").notNull(),
 });
 
-// export const ticketsRelations = relations(tickets, ({ one }) => ({
-// 	organization: one(organization, {
-// 		fields: [tickets.organizationId],
-// 		references: [organization.id],
-// 	}),
-// 	reportedBy: one(user, {
-// 		fields: [tickets.reportedById],
-// 		references: [user.id],
-// 		relationName: "reportedTickets",
-// 	}),
-// 	assignedTo: one(user, {
-// 		fields: [tickets.assignedToId],
-// 		references: [user.id],
-// 		relationName: "assignedTickets",
-// 	}),
-// }));
-
 export const session = pgTable("session", {
 	id: text("id").primaryKey(),
 	expiresAt: timestamp("expires_at").notNull(),

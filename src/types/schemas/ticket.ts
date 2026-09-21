@@ -1,16 +1,16 @@
 import { z } from "zod";
 
 export const TICKET_STATUSES = [
-	"open",
-	"in progress",
-	"closed",
-	"waiting",
+	"open", // open/unacknowledged. means the support team hasn't seen it yet.
+	"in progress", // in progress. means the support team is actively working on it.
+	"closed", // closed/completed. means the support team is done working on it.
+	"waiting", // waiting. means the support team is waiting for reply from the customer/company that made the ticket.
 ] as const;
 
 export const TICKET_TYPES = [
-	"support incident",
-	"purchase request",
-	"work order",
+	"support incident", // apps not working as expected, bugs, etc.
+	"purchase request", // "please buy this new laptop for Sarah Globex", "we need a new phone for John Acme", etc.
+	"work order", // "this server needs an update", "our phones need new firmware", etc.
 ] as const;
 
 export const TICKET_PRIORITIES = {
