@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Claude Code worktrees (per-session scratch checkouts, not app source)
+.claude/worktrees/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
