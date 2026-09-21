@@ -2,6 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import React from "react";
+import { cn } from "cn";
 import { getInitials } from "~/lib/utils";
 import type { RouterOutputs } from "~/trpc/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "~/ui/avatar";
@@ -53,32 +54,39 @@ export const UsersTable = ({ users }: { users: User[] }) => {
 			header: "Pronouns",
 			cell: ({ row }) => {
 				const [firstPronoun, ...restPronouns] = row.original.pronouns;
+				const badge = (
+					<Badge
+						variant="outline"
+						className={cn(
+							"w-28 justify-center truncate",
+							restPronouns.length > 0 && "cursor-default",
+						)}
+					>
+						{firstPronoun}
+						{restPronouns.length > 0 && ` +${restPronouns.length}`}
+					</Badge>
+				);
+
+				if (restPronouns.length === 0) {
+					return badge;
+				}
 
 				return (
-					<div className="flex items-center gap-1">
-						<Badge variant="outline">{firstPronoun}</Badge>
-						{restPronouns.length > 0 && (
-							<HoverCard openDelay={100} closeDelay={100}>
-								<HoverCardTrigger asChild>
-									<Badge variant="outline" className="cursor-default">
-										+{restPronouns.length}
+					<HoverCard openDelay={100} closeDelay={100}>
+						<HoverCardTrigger asChild>{badge}</HoverCardTrigger>
+						<HoverCardContent
+							align="start"
+							className="w-fit border-none bg-transparent p-0 shadow-none"
+						>
+							<div className="flex flex-wrap gap-1">
+								{restPronouns.map((pronoun) => (
+									<Badge key={pronoun} variant="outline">
+										{pronoun}
 									</Badge>
-								</HoverCardTrigger>
-								<HoverCardContent
-									align="start"
-									className="w-fit border-none bg-transparent p-0 shadow-none"
-								>
-									<div className="flex flex-wrap gap-1">
-										{restPronouns.map((pronoun) => (
-											<Badge key={pronoun} variant="outline">
-												{pronoun}
-											</Badge>
-										))}
-									</div>
-								</HoverCardContent>
-							</HoverCard>
-						)}
-					</div>
+								))}
+							</div>
+						</HoverCardContent>
+					</HoverCard>
 				);
 			},
 			meta: { fitContent: true },
