@@ -12,6 +12,7 @@ import {
 	type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React from "react";
 import {
 	CommandDialog,
@@ -54,12 +55,23 @@ function SearchResultGroup<T extends { id: string }>({
 	getLabel: (item: T) => string;
 	getSublabel?: (item: T) => string | undefined;
 }) {
+	const router = useRouter();
+
 	if (!items || items.length === 0) return null;
 
 	return (
 		<CommandGroup heading={heading}>
 			{items.map((item) => (
-				<CommandItem key={item.id} asChild value={`${heading}-${item.id}`}>
+				<CommandItem
+					key={item.id}
+					asChild
+					value={`${heading}-${item.id}`}
+					// cmdk's own selection is the single source of truth for which
+					// item Enter should open — routing off it (rather than reading
+					// the currently-`data-selected` DOM node after the fact) avoids
+					// navigating to a stale selection.
+					onSelect={() => router.push(getHref(item))}
+				>
 					<Link href={getHref(item)}>
 						<Icon />
 						<span>{getLabel(item)}</span>
@@ -74,6 +86,7 @@ function SearchResultGroup<T extends { id: string }>({
 }
 
 export const Cmdk = () => {
+	const router = useRouter();
 	const open = useAppStore((state) => state.cmdkIsOpen);
 	const setOpen = useAppStore((state) => state.setCmdkIsOpen);
 	const [cmdkInput, setCmdkInput] = React.useState("");
@@ -156,6 +169,10 @@ export const Cmdk = () => {
 					? (selectedItem as HTMLAnchorElement)
 					: null;
 
+			// Plain Enter is handled by each CommandItem's own onSelect (cmdk
+			// dispatches that only to whichever item it currently considers
+			// selected, so it can't open a stale item the way reading
+			// `[data-selected=true]` back out of the DOM here could).
 			if (selectedLink && (ev.ctrlKey || ev.metaKey) && ev.key === "Enter") {
 				ev.preventDefault();
 				const prevTargetAtr = selectedLink.getAttribute("target");
@@ -166,9 +183,6 @@ export const Cmdk = () => {
 				} else {
 					selectedLink.removeAttribute("target");
 				}
-			} else if (selectedLink && ev.key === "Enter") {
-				ev.preventDefault();
-				selectedLink.click();
 			}
 		};
 
@@ -204,7 +218,11 @@ export const Cmdk = () => {
 				<CommandEmpty>No results found.</CommandEmpty>
 				<CommandGroup heading="Pages">
 					{MAIN_NAV_ITEMS.map((item) => (
-						<CommandItem key={item.href} asChild>
+						<CommandItem
+							key={item.href}
+							asChild
+							onSelect={() => router.push(item.href)}
+						>
 							<Link href={item.href}>
 								<item.icon />
 								<span>{item.title}</span>
@@ -246,7 +264,7 @@ export const Cmdk = () => {
 				)}
 				<CommandSeparator />
 				<CommandGroup heading="Settings">
-					<CommandItem asChild>
+					<CommandItem asChild onSelect={() => router.push("/profile")}>
 						<Link href="/profile">
 							<User />
 							<span>Profile</span>
