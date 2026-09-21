@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/ui/avatar";
 import { Badge } from "~/ui/badge";
 import { DataTable, dataTableFeatures, useDataTable } from "~/ui/data-table";
 import { DataTableToolbar } from "~/ui/data-table-toolbar";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "~/ui/hover-card";
 
 type User = RouterOutputs["users"]["list"][number];
 
@@ -50,15 +51,36 @@ export const UsersTable = ({ users }: { users: User[] }) => {
 		{
 			accessorKey: "pronouns",
 			header: "Pronouns",
-			cell: ({ row }) => (
-				<div className="flex flex-wrap gap-1">
-					{row.original.pronouns.map((pronoun) => (
-						<Badge key={pronoun} variant="outline">
-							{pronoun}
-						</Badge>
-					))}
-				</div>
-			),
+			cell: ({ row }) => {
+				const [firstPronoun, ...restPronouns] = row.original.pronouns;
+
+				return (
+					<div className="flex items-center gap-1">
+						<Badge variant="outline">{firstPronoun}</Badge>
+						{restPronouns.length > 0 && (
+							<HoverCard openDelay={100} closeDelay={100}>
+								<HoverCardTrigger asChild>
+									<Badge variant="outline" className="cursor-default">
+										+{restPronouns.length}
+									</Badge>
+								</HoverCardTrigger>
+								<HoverCardContent
+									align="start"
+									className="w-fit border-none bg-transparent p-0 shadow-none"
+								>
+									<div className="flex flex-wrap gap-1">
+										{restPronouns.map((pronoun) => (
+											<Badge key={pronoun} variant="outline">
+												{pronoun}
+											</Badge>
+										))}
+									</div>
+								</HoverCardContent>
+							</HoverCard>
+						)}
+					</div>
+				);
+			},
 			meta: { fitContent: true },
 			enableGlobalFilter: false,
 		},
