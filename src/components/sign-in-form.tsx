@@ -11,11 +11,7 @@ import { authClient } from "~/lib/auth-client";
 import { Button } from "~/ui/button";
 import { Field, FieldError, FieldLabel } from "~/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "~/ui/input-group";
-import {
-	InputOTP,
-	InputOTPGroup,
-	InputOTPSlot,
-} from "~/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "~/ui/input-otp";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/ui/tooltip";
 
 const signInFormSchema = z.object({
@@ -45,7 +41,9 @@ export const SignInForm = () => {
 		});
 
 		if (error) {
-			form.setError("email", { message: error.message ?? "Couldn't send an OTP to that email" });
+			form.setError("email", {
+				message: error.message ?? "Couldn't send an OTP to that email",
+			});
 			return;
 		}
 
@@ -60,7 +58,9 @@ export const SignInForm = () => {
 		});
 
 		if (error) {
-			form.setError("code", { message: error.message ?? "That code didn't work" });
+			form.setError("code", {
+				message: error.message ?? "That code didn't work",
+			});
 			return;
 		}
 
@@ -68,7 +68,7 @@ export const SignInForm = () => {
 	};
 
 	return (
-		<div className="grid gap-6 max-w-80">
+		<div className="grid max-w-80 gap-6">
 			<form className="relative" onSubmit={form.handleSubmit(onSubmit)}>
 				<motion.div
 					className="grid gap-4"
@@ -85,7 +85,7 @@ export const SignInForm = () => {
 						<h1 className="text-2xl">
 							Sign in to{" "}
 							<span className="font-medium">
-								pwdr <span className="text-indigo-600 font-bold">GO</span>
+								pwdr <span className="font-bold text-indigo-600">GO</span>
 							</span>
 						</h1>
 						<div>
@@ -104,7 +104,7 @@ export const SignInForm = () => {
 										Email
 									</FieldLabel>
 									<div className="flex items-center">
-										<InputGroup className="rounded-r-none min-w-64">
+										<InputGroup className="min-w-64 rounded-r-none">
 											<InputGroupInput
 												{...field}
 												id={`rhf-sign-in-${field.name}`}
@@ -122,7 +122,7 @@ export const SignInForm = () => {
 													<Tooltip>
 														<TooltipTrigger asChild>
 															<Button
-																className="text-destructive hover:text-destructive focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:bg-accent dark:focus-visible:bg-accent/50"
+																className="text-destructive hover:text-destructive focus-visible:bg-accent focus-visible:ring-0 focus-visible:ring-offset-0 dark:focus-visible:bg-accent/50"
 																size={"icon-sm"}
 																variant={"ghost"}
 															>
@@ -137,7 +137,7 @@ export const SignInForm = () => {
 											)}
 										</InputGroup>
 										<Button
-											className="rounded-l-none bg-input -ml-px hover:bg-input-accent/100! focus-visible:bg-input-accent/100! focus-visible:z-10"
+											className="-ml-px rounded-l-none bg-input hover:bg-input-accent/100! focus-visible:z-10 focus-visible:bg-input-accent/100!"
 											variant={"outline"}
 											onClick={() => validateEmailStep()}
 										>
@@ -150,7 +150,7 @@ export const SignInForm = () => {
 					/>
 				</motion.div>
 				<motion.div
-					className="grid gap-4 inset-0 absolute justify-center"
+					className="absolute inset-0 grid justify-center gap-4"
 					initial={false}
 					animate={{
 						translateX: step === 1 ? "0px" : "100%",
@@ -164,7 +164,7 @@ export const SignInForm = () => {
 						<h1 className="text-2xl">
 							Sign in to{" "}
 							<span className="font-medium">
-								pwdr <span className="text-indigo-600 font-bold">GO</span>
+								pwdr <span className="font-bold text-indigo-600">GO</span>
 							</span>
 						</h1>
 						<div>Enter the OTP code we sent below</div>
@@ -174,7 +174,7 @@ export const SignInForm = () => {
 						name="code"
 						render={({ field, fieldState }) => {
 							return (
-								<div className="grid gap-2 justify-center">
+								<div className="grid justify-center gap-2">
 									<InputOTP
 										containerClassName="w-fit mx-auto"
 										maxLength={6}
@@ -192,7 +192,7 @@ export const SignInForm = () => {
 										</InputOTPGroup>
 									</InputOTP>
 									{fieldState.invalid && (
-										<div className="text-destructive text-sm text-center">
+										<div className="text-center text-sm text-destructive">
 											<FieldError errors={[fieldState.error]} />
 										</div>
 									)}

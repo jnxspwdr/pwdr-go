@@ -32,10 +32,15 @@ migration off an earlier fake JSON+zustand backend.
   (`~/ui/*`, `~/components/*`, `~/lib/*`, `~/hooks/*`, `~/data/*`,
   `~/utils` → `src/lib/utils.ts`) mirrored in `components.json`'s `aliases`.
 - `eslint.config.mjs` — flat config, `eslint-config-next`'s `core-web-vitals`
-  + `typescript` presets, no custom rules.
+  - `typescript` presets, no custom rules.
 - `drizzle.config.ts` — postgresql dialect, schema `src/server/db/schema.ts`,
   migrations output to `./drizzle` (unused today — see `db:push` below).
 - `postcss.config.mjs` — just `@tailwindcss/postcss`.
+- `prettier.config.mjs` — `useTabs: true`; `prettier-plugin-tailwindcss` with
+  `tailwindStylesheet: "./src/app/globals.css"` (required for Tailwind v4,
+  no JS config to auto-detect) and `tailwindFunctions: ["tw"]` (see
+  `src/lib/tw.ts` below). Not wired into a package.json script — run via
+  `bunx prettier --check .` / `--write .`.
 
 ## Environment & running it locally
 
@@ -211,13 +216,13 @@ never needed a fix. Steps, in order:
 
 1. **Schema** (`schema.ts`, "app tables" section): new `pgTable` with an
    `organizationId: text(...).notNull().references(() => organization.id,
-   { onDelete: "cascade" })` column. If it needs joined data (like tickets'
+{ onDelete: "cascade" })` column. If it needs joined data (like tickets'
    `reportedBy`/`assignedTo`), add a `relations()` block for it too.
 2. **Router**: build every procedure on `orgProcedure`, never
    `protectedProcedure` directly. `orgProcedure` already verified the caller
    is a real member of `ctx.org` — that check is the entire authorization
    model here, so each query just needs `eq(table.organizationId,
-   ctx.org.id)` (or `and(...)` with more conditions for `byId`-style
+ctx.org.id)` (or `and(...)` with more conditions for `byId`-style
    lookups). No separate permission/ACL layer to write.
 3. **Mount it** in `root.ts`.
 4. **Push the schema**: `bun run db:push` (dev-only workflow, no migration
@@ -229,7 +234,7 @@ never needed a fix. Steps, in order:
    component that renders it (see `users-table.tsx` / `tickets-table.tsx`)
    — never hand-write the row type.
 
-**One deliberate exception:** `user` is *not* an org-scoped table, even
+**One deliberate exception:** `user` is _not_ an org-scoped table, even
 though every user belongs to an org. Org membership for `user` lives
 entirely in `member` (`organizationId` + `userId` + `role`), because that's
 what better-auth's own drizzle adapter expects — it manages `user` rows
@@ -291,6 +296,17 @@ there once and both the sidebar and cmdk pick it up.
 
 ## UI / components
 
+- `src/lib/tw.ts` — `` tw`...` `` tagged template for Tailwind class strings
+  that live outside JSX (constants, `cva`/variant maps, config objects).
+  Returns a branded `TwClass` (plain `string` underneath, so it flows into
+  `cn(...)` unchanged); interpolation is a compile-time error (`never[]`
+  rest param) since interpolated classes can't be statically scanned. Wired
+  for tooling via `.vscode/settings.json`'s `tailwindCSS.classFunctions` and
+  `prettier.config.mjs`'s `tailwindFunctions` above — Tailwind's v4 automatic
+  source detection already covers any `.ts`/`.tsx` file project-wide, so no
+  `@source` directive is needed. Not used inside existing components by
+  convention — plain `className`/`cn()` strings there already get full
+  Tailwind tooling for free.
 - `src/components/ui/*` — a hand-copied shadcn/radix-based primitive set
   (button, card, dialog, dropdown, sidebar, table, input-otp, command palette
   via `cmdk`, etc.), not pulled in via the shadcn CLI (`components.json`

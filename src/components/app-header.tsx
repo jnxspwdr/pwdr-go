@@ -35,14 +35,14 @@ export const AppHeader = () => {
 	}, []);
 
 	return (
-		<header className="bg-sidebar sticky top-0 z-50 flex w-full items-center">
-			<div className="flex h-(--header-height) w-full items-center gap-2 pl-5 pr-2 pt-2">
-				<div className="font-medium text-xl">
-					pwdr <span className="text-indigo-600 font-bold">GO</span>
+		<header className="sticky top-0 z-50 flex w-full items-center bg-sidebar">
+			<div className="flex h-(--header-height) w-full items-center gap-2 pt-2 pr-2 pl-5">
+				<div className="text-xl font-medium">
+					pwdr <span className="font-bold text-indigo-600">GO</span>
 				</div>
 				<Breadcrumbs />
 				<Button
-					className="w-48 justify-start has-[>svg]:pr-1.5 text-zinc-500 ml-auto dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-50"
+					className="ml-auto w-48 justify-start text-zinc-500 hover:text-zinc-950 has-[>svg]:pr-1.5 dark:text-zinc-400 dark:hover:text-zinc-50"
 					variant={"outline"}
 					size={"sm"}
 					onClick={() => {

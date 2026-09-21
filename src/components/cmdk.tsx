@@ -105,7 +105,7 @@ export const Cmdk = () => {
 
 	const { data: searchResults } = trpc.search.global.useQuery(
 		{ query: debouncedQuery },
-		{ enabled: open && debouncedQuery.length >= SEARCH_MIN_LENGTH }
+		{ enabled: open && debouncedQuery.length >= SEARCH_MIN_LENGTH },
 	);
 
 	React.useEffect(() => {
@@ -115,7 +115,7 @@ export const Cmdk = () => {
 				setLinkIsSelected(
 					!!listRef.current
 						.querySelector("[data-selected=true]")
-						?.getAttribute("href")
+						?.getAttribute("href"),
 				);
 			}
 		});
@@ -126,7 +126,7 @@ export const Cmdk = () => {
 			setLinkIsSelected(
 				!!listRef.current
 					.querySelector("[data-selected=true]")
-					?.getAttribute("href")
+					?.getAttribute("href"),
 			);
 		}
 
@@ -146,14 +146,14 @@ export const Cmdk = () => {
 				setLinkIsSelected(
 					!!listRef.current
 						.querySelector("[data-selected=true]")
-						?.getAttribute("href")
+						?.getAttribute("href"),
 				);
 			} else if (ev.key === "ArrowUp") {
 				ev.preventDefault();
 				setLinkIsSelected(
 					!!listRef.current
 						.querySelector("[data-selected=true]")
-						?.getAttribute("href")
+						?.getAttribute("href"),
 				);
 			}
 		};
@@ -162,7 +162,7 @@ export const Cmdk = () => {
 			if (!linkIsSelected || !listRef.current) return;
 
 			const selectedItem = listRef.current.querySelector(
-				"[data-selected=true]"
+				"[data-selected=true]",
 			);
 			const selectedLink =
 				selectedItem?.nodeName === "A" && selectedItem?.hasAttribute("href")

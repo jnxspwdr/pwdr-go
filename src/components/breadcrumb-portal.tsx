@@ -101,7 +101,7 @@ export const Breadcrumbs = ({
 	return (
 		<Breadcrumb {...props}>
 			{typeof crumbs === "undefined" ? (
-				<Skeleton className="w-20 h-4" />
+				<Skeleton className="h-4 w-20" />
 			) : crumbs === null ? null : (
 				<BreadcrumbList>
 					{crumbs?.map((crumb) => {
@@ -114,7 +114,7 @@ export const Breadcrumbs = ({
 											<DropdownMenuTrigger asChild>
 												<button className="flex items-center gap-1">
 													{crumb.title}
-													<ChevronDown className="size-4 group-data-[state=open]/dropdown-menu-trigger:rotate-180 transition-transform" />
+													<ChevronDown className="size-4 transition-transform group-data-[state=open]/dropdown-menu-trigger:rotate-180" />
 												</button>
 											</DropdownMenuTrigger>
 											<DropdownMenuContent>

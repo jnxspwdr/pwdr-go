@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 
 export default async function NotFound() {
 	return (
-		<div className="fixed grid place-content-center inset-0 z-[9999] bg-background">
+		<div className="fixed inset-0 z-[9999] grid place-content-center bg-background">
 			<div className="grid gap-4">
-				<div className="text-3xl inline-flex gap-2 items-center justify-center">
+				<div className="inline-flex items-center justify-center gap-2 text-3xl">
 					<h1>404</h1>
 					<Separator
 						className="data-[orientation=vertical]:h-8"
@@ -22,7 +22,7 @@ export default async function NotFound() {
 					<h2>Page not found</h2>
 				</div>
 				<p className="text-center">The page you requested could not be found</p>
-				<div className="flex items-center gap-4 mx-auto">
+				<div className="mx-auto flex items-center gap-4">
 					<Button className="w-36" variant={"secondary"} asChild>
 						<Link href="/sign-in">Sign in</Link>
 					</Button>

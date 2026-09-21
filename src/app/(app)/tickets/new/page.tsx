@@ -113,7 +113,7 @@ export default function NewTicketPage() {
 								{createTicket.isPending ? "Creating..." : "Create ticket"}
 							</Button>
 							{createTicket.isError && (
-								<div className="text-destructive text-sm">
+								<div className="text-sm text-destructive">
 									{createTicket.error.message}
 								</div>
 							)}

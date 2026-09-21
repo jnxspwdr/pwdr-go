@@ -55,7 +55,7 @@ const InputOTPSlot = ({
 			data-active={isActive}
 			className={cn(
 				"relative flex h-9 w-9 items-center justify-center border-y border-r text-sm shadow-xs transition-all outline-none first:rounded-l-md first:border-l last:rounded-r-md aria-invalid:border-destructive data-[active=true]:z-10 data-[active=true]:aria-invalid:border-destructive",
-				"data-[active=true]:border-ring border-input-accent bg-input",
+				"border-input-accent bg-input data-[active=true]:border-ring",
 				className,
 			)}
 			{...props}

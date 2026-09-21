@@ -28,7 +28,7 @@ export default async function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body
-				className={`${geistSans.variable} ${geistMono.variable} antialiased [--header-height:calc(--spacing(11))] bg-background text-foreground font-[family-name:var(--font-geist-sans)]`}
+				className={`${geistSans.variable} ${geistMono.variable} bg-background font-[family-name:var(--font-geist-sans)] text-foreground antialiased [--header-height:calc(--spacing(11))]`}
 			>
 				<JotaiProvider>
 					<ThemeProvider

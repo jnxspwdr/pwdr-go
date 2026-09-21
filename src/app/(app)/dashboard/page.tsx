@@ -6,7 +6,7 @@ export default async function DashboardPage() {
 	return (
 		<>
 			<ServerCrumbs crumbs={[{ title: "dashboard" }]} />
-			<div className="grid [--card-gap:--spacing(4)] gap-(--card-gap) @2xl:grid-cols-2 grid-cols-1">
+			<div className="grid grid-cols-1 gap-(--card-gap) [--card-gap:--spacing(4)] @2xl:grid-cols-2">
 				<div className="flex flex-col gap-(--card-gap)">
 					<Card>
 						<CardHeader>

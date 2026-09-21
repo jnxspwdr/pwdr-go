@@ -2,7 +2,7 @@ import React from "react";
 
 export const useDebouncedCallback = (
 	func: (...args: unknown[]) => void,
-	delay: number
+	delay: number,
 ) => {
 	const timeout = React.useRef<NodeJS.Timeout>(undefined);
 
@@ -16,6 +16,6 @@ export const useDebouncedCallback = (
 			clearTimeout(timeout.current);
 			timeout.current = setTimeout(later, delay);
 		},
-		[func, delay]
+		[func, delay],
 	);
 };

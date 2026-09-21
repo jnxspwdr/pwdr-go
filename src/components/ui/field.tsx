@@ -127,9 +127,9 @@ const FieldLabel = ({
 			data-slot="field-label"
 			data-fancy={!disableFancy}
 			className={cn(
-				"group/field-label peer/field-label z-20 px-3 flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50",
+				"group/field-label peer/field-label z-20 flex w-fit gap-2 px-3 leading-snug group-data-[disabled=true]/field:opacity-50",
 				!disableFancy &&
-					"text-xs absolute top-1/2 -translate-y-1/2 group-has-[input:focus-visible]/field:-top-[10px] transition-[top] group-has-[input[value]:not([value=''])]/field:-top-[10px]",
+					"absolute top-1/2 -translate-y-1/2 text-xs transition-[top] group-has-[input:focus-visible]/field:-top-[10px] group-has-[input[value]:not([value=''])]/field:-top-[10px]",
 				"has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border [&>*]:data-[slot=field]:p-4",
 				"has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 dark:has-data-[state=checked]:bg-primary/10",
 				className,
@@ -147,8 +147,8 @@ const FieldLabel = ({
 		<>
 			<div
 				className={cn(
-					"z-10 rounded-t-md left-0 bg-input w-fit border-input-accent border-b-0!",
-					"absolute py-0 border-0 h-0 transition-[height] bottom-[calc(100%-1px)]",
+					"left-0 z-10 w-fit rounded-t-md border-b-0! border-input-accent bg-input",
+					"absolute bottom-[calc(100%-1px)] h-0 border-0 py-0 transition-[height]",
 					"group-has-[input:focus-visible]/field:h-(--label-height) group-has-[input:focus-visible]/field:border group-has-[input:focus-visible]/field:py-1",
 					"group-has-[input[value]:not([value=''])]/field:h-(--label-height) group-has-[input[value]:not([value=''])]/field:border group-has-[input[value]:not([value=''])]/field:py-1",
 				)}
@@ -266,7 +266,7 @@ const FieldError = ({
 		<div
 			role="alert"
 			data-slot="field-error"
-			className={cn("text-sm px-3 font-normal text-destructive", className)}
+			className={cn("px-3 text-sm font-normal text-destructive", className)}
 			{...props}
 		>
 			{content}

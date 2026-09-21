@@ -33,7 +33,7 @@ export default async function TicketDetailsPage({
 						<Badge variant={"secondary"}>{ticket.type}</Badge>
 					</div>
 					<p className="whitespace-pre-wrap">{ticket.description}</p>
-					<div className="text-muted-foreground text-sm">
+					<div className="text-sm text-muted-foreground">
 						Reported by {ticket.reportedBy.name}
 						{ticket.assignedTo
 							? ` · Assigned to ${ticket.assignedTo.name}`
