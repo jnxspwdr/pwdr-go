@@ -315,7 +315,8 @@ there once and both the sidebar and cmdk pick it up.
   convention — plain `className`/`cn()` strings there already get full
   Tailwind tooling for free.
 - `src/components/ui/*` — a hand-copied shadcn/radix-based primitive set
-  (button, card, dialog, dropdown, popover, sidebar, table, input-otp,
+  (button, card, dialog, dropdown, popover, hover-card, sidebar, table,
+  input-otp,
   command palette via `cmdk`, etc.), not pulled in via the shadcn CLI
   (`components.json` exists mainly for editor tooling/import aliases).
 - `src/components/ui/data-table.tsx` — the generic table primitive:
@@ -367,9 +368,11 @@ there once and both the sidebar and cmdk pick it up.
   for the toolbar's status facet). Wraps `<DataTable>` with
   `<DataTableToolbar>` (search + status filter + export).
 - `src/components/users-table.tsx` — `DataTable` columns for avatar
-  (`hideHeader`), name (links to detail page), pronouns (one `Badge` per
-  pronoun), and title (a single `Badge` combining `jobTitle`/`jobSite`, e.g.
-  "Server Specialist · Copenhagen"). `agreement` is a variant-per-type badge
+  (`hideHeader`), name (links to detail page), pronouns (first pronoun as a
+  `Badge`; any extra pronouns collapse into a "+N" `Badge` that opens a
+  transparent `HoverCard` with the rest, keeping the column narrow), and
+  title (a single `Badge` combining `jobTitle`/`jobSite`, e.g. "Server
+  Specialist · Copenhagen"). `agreement` is a variant-per-type badge
   column hidden by default via `useDataTable`'s `initialState:
   {columnVisibility: {agreement: false}}` — toggle it back on from the
   toolbar's "View" menu.
