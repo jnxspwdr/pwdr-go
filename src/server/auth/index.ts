@@ -23,6 +23,9 @@ export const auth = betterAuth({
 			gender: { type: "string", required: true, input: false },
 			pronouns: { type: "string[]", required: true, input: false },
 			phoneNumber: { type: "string", required: true, input: false },
+			jobSite: { type: "string", required: true, input: false },
+			jobTitle: { type: "string", required: true, input: false },
+			agreement: { type: "string", required: true, input: false },
 		},
 	},
 	databaseHooks: {

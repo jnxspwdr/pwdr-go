@@ -69,6 +69,9 @@ await db.insert(userTable).values(
 		gender: generatedUser.gender,
 		pronouns: generatedUser.pronouns,
 		phoneNumber: generatedUser.phoneNumber,
+		jobSite: generatedUser.jobSite,
+		jobTitle: generatedUser.jobTitle,
+		agreement: generatedUser.agreement,
 	})),
 );
 

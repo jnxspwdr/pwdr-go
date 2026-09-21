@@ -87,6 +87,28 @@ export const miscGenders = [
 	"Xenogender",
 ] as const;
 
+export const JOB_SITES = [
+	"Copenhagen",
+	"Beijing",
+	"New York",
+	"London",
+	"Berlin",
+	"Tokyo",
+	"São Paulo",
+] as const;
+
+export const JOB_TITLES = [
+	"HR Manager",
+	"Server Specialist",
+	"Support Engineer",
+	"Account Manager",
+	"Office Manager",
+	"IT Technician",
+	"Network Administrator",
+] as const;
+
+export const AGREEMENT_TYPES = ["full time", "part time", "ad hoc"] as const;
+
 export const userSchema = z.object({
 	id: z.ulid(),
 	avatar: z.url(),
@@ -99,6 +121,9 @@ export const userSchema = z.object({
 	),
 	email: z.email(),
 	phoneNumber: z.e164(),
+	jobSite: z.literal(JOB_SITES),
+	jobTitle: z.literal(JOB_TITLES),
+	agreement: z.literal(AGREEMENT_TYPES),
 });
 
 export type User = z.infer<typeof userSchema>;
