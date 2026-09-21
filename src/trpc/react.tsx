@@ -26,7 +26,7 @@ const getBaseUrl = () => {
 
 export const trpc = createTRPCReact<AppRouter>();
 
-export function TRPCReactProvider(props: { children: React.ReactNode }) {
+export const TRPCReactProvider = (props: { children: React.ReactNode }) => {
 	const queryClient = getQueryClient();
 
 	const [trpcClient] = React.useState(() =>
@@ -52,4 +52,4 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
 			</trpc.Provider>
 		</QueryClientProvider>
 	);
-}
+};

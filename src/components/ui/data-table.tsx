@@ -41,10 +41,10 @@ interface DataTableProps<TData extends RowData> {
 	data: TData[];
 }
 
-export function DataTable<TData extends RowData>({
+export const DataTable = <TData extends RowData,>({
 	columns,
 	data,
-}: DataTableProps<TData>) {
+}: DataTableProps<TData>) => {
 	const table = useTable({
 		features: dataTableFeatures,
 		data,
@@ -115,4 +115,4 @@ export function DataTable<TData extends RowData>({
 			</Table>
 		</div>
 	);
-}
+};
