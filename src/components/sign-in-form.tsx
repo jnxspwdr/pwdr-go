@@ -19,6 +19,15 @@ const signInFormSchema = z.object({
 	code: z.string().min(6).max(6),
 });
 
+// better-auth's raw error codes (`Invalid OTP`, `OTP expired`, ...) read as
+// technical/inconsistent with the rest of the form's copy.
+const OTP_ERROR_MESSAGES: Record<string, string> = {
+	INVALID_OTP: "That code isn't right. Double-check it and try again.",
+	OTP_EXPIRED: "That code has expired. Go back and request a new one.",
+	TOO_MANY_ATTEMPTS:
+		"Too many incorrect attempts. Go back and request a new code.",
+};
+
 export const SignInForm = () => {
 	const router = useRouter();
 	const [step, setStep] = React.useState(0);
@@ -59,7 +68,8 @@ export const SignInForm = () => {
 
 		if (error) {
 			form.setError("code", {
-				message: error.message ?? "That code didn't work",
+				message:
+					OTP_ERROR_MESSAGES[error.code ?? ""] ?? "That code didn't work.",
 			});
 			return;
 		}
@@ -180,6 +190,7 @@ export const SignInForm = () => {
 										maxLength={6}
 										value={field.value}
 										onChange={(newValue) => field.onChange(newValue)}
+										onComplete={() => void form.handleSubmit(onSubmit)()}
 										ref={otpRef}
 									>
 										<InputOTPGroup>
