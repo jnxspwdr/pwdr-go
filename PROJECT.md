@@ -24,6 +24,19 @@ The whole stack was hand-assembled file by file rather than via `create-t3-app`
 or the better-auth/shadcn CLIs — see git history / commit `aecd3bc` for the
 migration off an earlier fake JSON+zustand backend.
 
+**Config files:**
+
+- `next.config.ts` — `devIndicators: false`; `images.remotePatterns` allows
+  `i.pravatar.cc` (seeded users' fake avatar URLs, `src/data/generate-users.ts`).
+- `tsconfig.json` — path aliases: `~/*` → `src/*`, plus narrower aliases
+  (`~/ui/*`, `~/components/*`, `~/lib/*`, `~/hooks/*`, `~/data/*`,
+  `~/utils` → `src/lib/utils.ts`) mirrored in `components.json`'s `aliases`.
+- `eslint.config.mjs` — flat config, `eslint-config-next`'s `core-web-vitals`
+  + `typescript` presets, no custom rules.
+- `drizzle.config.ts` — postgresql dialect, schema `src/server/db/schema.ts`,
+  migrations output to `./drizzle` (unused today — see `db:push` below).
+- `postcss.config.mjs` — just `@tailwindcss/postcss`.
+
 ## Environment & running it locally
 
 Env vars (`.env`, see `.env.example`), validated in `src/env.ts` via `@t3-oss/env-nextjs`:
@@ -41,6 +54,8 @@ Scripts (`package.json`):
 - `bun run db:generate` / `db:migrate` / `db:push` / `db:studio` — drizzle-kit
 - `bun run generate` — runs `src/data/seed.ts` to wipe and reseed the DB with
   fake orgs/users/tickets
+- `bun run build` / `start` — `next build` / `next start` (production)
+- `bun run lint` — `eslint .`
 
 There is no self-serve sign-up. Users only exist via the seed script; sign-in
 is by OTP emailed (currently just console-logged — no email provider wired
