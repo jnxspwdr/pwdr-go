@@ -64,15 +64,18 @@ export const dataTableFeatures = tableFeatures({
 export const useDataTable = <TData extends RowData>({
 	columns,
 	data,
+	initialState,
 }: {
 	columns: ColumnDef<typeof dataTableFeatures, TData>[];
 	data: TData[];
+	initialState?: { columnVisibility?: Record<string, boolean> };
 }) => {
 	return useTable({
 		features: dataTableFeatures,
 		data,
 		columns,
 		globalFilterFn: "includesString",
+		initialState,
 	});
 };
 

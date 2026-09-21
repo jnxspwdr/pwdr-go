@@ -2,8 +2,11 @@ import { faker, SexType } from "@faker-js/faker";
 import { FAKER_SEED } from "~/data/seed";
 import { shuffle } from "~/lib/utils";
 import {
+	AGREEMENT_TYPES,
 	femmeLikeGenders,
 	femmePronouns,
+	JOB_SITES,
+	JOB_TITLES,
 	mascLikeGenders,
 	mascPronouns,
 	miscGenders,
@@ -88,6 +91,9 @@ export const generateUsers = (): User[] => {
 				.toLowerCase(),
 			avatar: `https://i.pravatar.cc/512?img=${avatarIndex}`,
 			phoneNumber: faker.phone.number({ style: "international" }),
+			jobSite: faker.helpers.arrayElement(JOB_SITES),
+			jobTitle: faker.helpers.arrayElement(JOB_TITLES),
+			agreement: faker.helpers.arrayElement(AGREEMENT_TYPES),
 		};
 
 		userSchema.parse(user);
@@ -134,6 +140,9 @@ export const generateUsers = (): User[] => {
 				.toLowerCase(),
 			avatar: `https://i.pravatar.cc/512?img=${avatarIndex}`,
 			phoneNumber: faker.phone.number({ style: "international" }),
+			jobSite: faker.helpers.arrayElement(JOB_SITES),
+			jobTitle: faker.helpers.arrayElement(JOB_TITLES),
+			agreement: faker.helpers.arrayElement(AGREEMENT_TYPES),
 		};
 
 		userSchema.parse(user);
@@ -164,6 +173,9 @@ export const createPwdrUser = (emailDomain: string): User => {
 		email: `jnxspwdr@${emailDomain}`,
 		avatar: "https://imgur.com/gallery/jinx-pfp-v3-256-eWBdJWx#S0FXGEn",
 		phoneNumber: faker.phone.number({ style: "international" }),
+		jobSite: faker.helpers.arrayElement(JOB_SITES),
+		jobTitle: "HR Manager",
+		agreement: "full time",
 	};
 
 	userSchema.parse(pwdr);

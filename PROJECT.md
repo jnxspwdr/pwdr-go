@@ -80,8 +80,11 @@ drizzle adapter — see the comment at the top of the file):
 
 - `user` — better-auth's identity table, extended with app-specific
   `additionalFields`: `firstName`, `lastName`, `gender`, `pronouns` (jsonb
-  string array), `phoneNumber`. All `input: false` — nobody self-registers,
-  so these never need to arrive from client input.
+  string array), `phoneNumber`, `jobSite`, `jobTitle`, and `agreement` (pg
+  enum `full time | part time | ad hoc`, values from `AGREEMENT_TYPES` in
+  `src/types/schemas/user.ts`, which also holds `JOB_SITES`/`JOB_TITLES`).
+  All `input: false` — nobody self-registers, so these never need to arrive
+  from client input.
 - `session`, `account`, `verification` — standard better-auth tables.
   `session` additionally carries `activeOrganizationId`, set by a database
   hook (below).
@@ -289,9 +292,10 @@ there once and both the sidebar and cmdk pick it up.
   - `/tickets/new` — client-side form (react-hook-form + zod), calls
     `trpc.tickets.create.useMutation`, redirects to the new ticket on success.
   - `/users` — server-rendered directory of the org's members, fetches via
-    `api.users.list()`, renders `<UsersTable>` (currently just a `name`
-    column linking to `/users/[id]`, which doesn't exist yet, plus the
-    shared `DataTableToolbar` for search/export).
+    `api.users.list()`, renders `<UsersTable>` (`name` column links to
+    `/users/[id]`, which doesn't exist yet — see `UI / components` below for
+    the full column set) plus the shared `DataTableToolbar` for
+    search/export.
 - The command palette links to `/profile`, but the page doesn't exist yet —
   a known gap, not a broken link by accident.
 - `api/auth/[...all]` — better-auth's catch-all handler (`toNextJsHandler`).
@@ -318,8 +322,10 @@ there once and both the sidebar and cmdk pick it up.
   `dataTableFeatures` wires up `@tanstack/react-table`'s column filtering,
   global filtering, column faceting, column visibility, and row selection
   features (plus `includesString`/`arrHas` filter fns); `useDataTable({
-  columns, data })` builds a table instance from those features, and
-  `<DataTable table={table} />` renders it. Column `meta` supports
+  columns, data, initialState? })` builds a table instance from those
+  features (`initialState.columnVisibility` sets which columns start
+  hidden), and `<DataTable table={table} />` renders it. Column `meta`
+  supports
   `primary`/`fitContent`/`hideHeader`/`columnClassName`/`getHref` (declared
   via module augmentation) for the primary-column-links-to-detail-page
   pattern.
@@ -360,6 +366,13 @@ there once and both the sidebar and cmdk pick it up.
   a status badge with variant-per-status color mapping (`filterFn: "arrHas"`
   for the toolbar's status facet). Wraps `<DataTable>` with
   `<DataTableToolbar>` (search + status filter + export).
+- `src/components/users-table.tsx` — `DataTable` columns for avatar
+  (`hideHeader`), name (links to detail page), pronouns (one `Badge` per
+  pronoun), and title (a single `Badge` combining `jobTitle`/`jobSite`, e.g.
+  "Server Specialist · Copenhagen"). `agreement` is a variant-per-type badge
+  column hidden by default via `useDataTable`'s `initialState:
+  {columnVisibility: {agreement: false}}` — toggle it back on from the
+  toolbar's "View" menu.
 
 State: `store.app.ts` (zustand) only holds `cmdkIsOpen` — deliberately tiny,
 since most state is server data via tRPC/React Query or ephemeral UI state
@@ -376,9 +389,11 @@ admin login; regardless of the faker seed, `jnxspwdr@<domain>` is always
 that org's admin, so manual sign-in testing stays predictable.
 
 - `generate-users.ts` — `generateUsers()` returns the faker-generated roster
-  (deliberately broad set of gender/pronoun combinations — see
-  `src/types/schemas/user.ts`); `createPwdrUser(domain)` separately builds
-  one org-scoped "Powder" admin per call, used by `seed.ts` once per org.
+  (deliberately broad set of gender/pronoun combinations, plus a random
+  `jobSite`/`jobTitle`/`agreement` per user — see `src/types/schemas/user.ts`
+  for the value lists); `createPwdrUser(domain)` separately builds one
+  org-scoped "Powder" admin per call (always `full time`, `HR Manager`),
+  used by `seed.ts` once per org.
 - `generate-tickets.ts` — faker-generated tickets per org, validated against
   `ticketSchema` before insert.
 - Faker seed is either `ENV_FAKER_SEED` or a fresh random seed logged to the

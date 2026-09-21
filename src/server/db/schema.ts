@@ -10,10 +10,13 @@ import {
 } from "drizzle-orm/pg-core";
 import { PLAN_IDS } from "~/lib/plans";
 import { TICKET_STATUSES, TICKET_TYPES } from "~/types/schemas/ticket";
+import { AGREEMENT_TYPES } from "~/types/schemas/user";
 
 // --- better-auth core tables ---------------------------------------------
 // Field names (JS keys) follow better-auth's canonical schema, since that's
 // what the drizzle adapter looks up by. Column names are snake_case.
+
+export const agreementEnum = pgEnum("agreement", AGREEMENT_TYPES);
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -30,6 +33,9 @@ export const user = pgTable("user", {
 	gender: text("gender").notNull(),
 	pronouns: jsonb("pronouns").$type<string[]>().notNull(),
 	phoneNumber: text("phone_number").notNull(),
+	jobSite: text("job_site").notNull(),
+	jobTitle: text("job_title").notNull(),
+	agreement: agreementEnum("agreement").notNull(),
 });
 
 export const session = pgTable("session", {
