@@ -58,7 +58,7 @@ export const UsersTable = ({ users }: { users: User[] }) => {
 					<Badge
 						variant="outline"
 						className={cn(
-							"w-28 justify-center truncate",
+							"truncate",
 							restPronouns.length > 0 && "cursor-default",
 						)}
 					>
@@ -80,7 +80,11 @@ export const UsersTable = ({ users }: { users: User[] }) => {
 						>
 							<div className="flex flex-wrap gap-1">
 								{restPronouns.map((pronoun) => (
-									<Badge key={pronoun} variant="outline">
+									<Badge
+										className="drop-shadow-xl drop-shadow-background"
+										key={pronoun}
+										variant="outline"
+									>
 										{pronoun}
 									</Badge>
 								))}
