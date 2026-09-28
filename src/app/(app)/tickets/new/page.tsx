@@ -1,12 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { UserRoundIcon } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useCrumbs } from "~/components/breadcrumb-portal";
 import { trpc } from "~/trpc/react";
 import { TICKET_PRIORITIES } from "~/types/schemas/ticket";
+import { Badge } from "~/ui/badge";
 import { Button } from "~/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "~/ui/field";
 import { Input } from "~/ui/input";
@@ -39,6 +41,13 @@ export default function NewTicketPage() {
 	]);
 
 	const router = useRouter();
+	const searchParams = useSearchParams();
+	const aboutUserId = searchParams.get("about");
+
+	const aboutUser = trpc.users.byId.useQuery(
+		{ id: aboutUserId ?? "" },
+		{ enabled: !!aboutUserId },
+	);
 
 	const createTicket = trpc.tickets.create.useMutation({
 		onSuccess: (ticket) => {
@@ -60,10 +69,21 @@ export default function NewTicketPage() {
 			<div className="@container">
 				<form
 					onSubmit={form.handleSubmit((data) => {
-						createTicket.mutate(data);
+						createTicket.mutate({
+							...data,
+							assignedToId: aboutUserId ?? undefined,
+						});
 					})}
 				>
 					<FieldGroup>
+						{aboutUser.data && (
+							<Field>
+								<Badge variant="secondary" className="w-fit">
+									<UserRoundIcon />
+									Reporting: {aboutUser.data.name}
+								</Badge>
+							</Field>
+						)}
 						<Controller
 							control={form.control}
 							name="title"

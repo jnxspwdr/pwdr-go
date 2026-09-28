@@ -14,7 +14,7 @@ auth via better-auth (email OTP, no passwords).
 - **tRPC v11** — typed API layer, no REST
 - **Drizzle ORM** + **Postgres** (`postgres` driver, `drizzle-orm/postgres-js`)
 - **better-auth** — sessions, email-OTP sign-in, organization plugin (multi-tenancy)
-- **Tailwind v4**, shadcn/radix-based UI kit (hand-copied components, not the shadcn CLI)
+- **Tailwind v4**, shadcn/radix-based UI kit (components live in `src/components/ui`, added via `shadcn add` then restyled to repo conventions)
 - **Zod v4** for input/schema validation, **react-hook-form** for forms
 - **jotai** (cross-tree UI state like breadcrumbs), **zustand** (small global UI store)
 - **@tanstack/react-table** (v9) — shared `DataTable`/`useDataTable` primitive
@@ -193,7 +193,13 @@ source of truth, importable from both client and server code (unlike
   - `byId` — single ticket, scoped to the caller's org (cross-org IDs 404, not leak).
   - `create` — validates `title`/`description`/`priority` via Zod, always
     creates as `status: "open"`, `type: "support incident"`,
-    `reportedById: <caller>`. No update/assign/status-change mutations exist yet.
+    `reportedById: <caller>`. Optional `assignedToId` (must be a member of
+    the caller's org) files it about a specific user — used by the user
+    page's "Report" action.
+  - `setStatus` — `{id, status}`, org-scoped; backs close/complete/reopen.
+  - `escalate` — bumps priority one tier (capped at `high`) and sets status
+    to `in progress`; rejects (`BAD_REQUEST`) on a closed ticket.
+    Neither mutation has role gating yet — any org member can use them.
 - `routers/organization.ts`:
   - `current` — the caller's active org (`id`, `name`, `plan`). Only
     consumer so far is manual verification; no UI reads it yet.
@@ -203,6 +209,11 @@ source of truth, importable from both client and server code (unlike
     rule below.
   - `byId` — single user, scoped to the caller's org via `member`
     (cross-org IDs 404, not leak, same pattern as `tickets.byId`).
+  - `update` — `{id, phoneNumber, jobSite, jobTitle, agreement}`, org-scoped
+    via `member`. Only these operational fields are editable; name, email,
+    gender, and pronouns are identity fields (name/email tied to
+    better-auth) and stay read-only in the UI. `updatedAt` is set explicitly
+    (no `$onUpdate` on the schema).
 - `routers/search.ts`:
   - `global` — org-scoped `ilike` search across tickets
     (`title`/`ticketNumber`) and users (`name`/`email`), capped at 5 results
@@ -296,14 +307,18 @@ there once and both the sidebar and cmdk pick it up.
   - `/tickets` — server-rendered list, fetches via `api.tickets.list()`,
     renders `<TicketsTable>`.
   - `/tickets/[ticketId]` — server-rendered detail page; `NOT_FOUND` tRPC
-    errors are caught and mapped to Next's `notFound()`.
+    errors are caught (`.catch(() => null)`) and mapped to Next's
+    `notFound()`. Renders `<TicketDetails>`.
   - `/tickets/new` — client-side form (react-hook-form + zod), calls
     `trpc.tickets.create.useMutation`, redirects to the new ticket on success.
+    `?about=<userId>` (set by the user page's "Report" action) shows a
+    "Reporting: <name>" badge and passes `assignedToId` to the mutation.
   - `/users` — server-rendered directory of the org's members, fetches via
     `api.users.list()`, renders `<UsersTable>` (`name` column links to
-    `/users/[id]`, which doesn't exist yet — see `UI / components` below for
-    the full column set) plus the shared `DataTableToolbar` for
-    search/export.
+    `/users/[userId]` — see `UI / components` below for the full column set)
+    plus the shared `DataTableToolbar` for search/export.
+  - `/users/[userId]` — server-rendered detail page (`api.users.byId`,
+    `notFound()` on error), renders `<UserDetails>`.
 - The command palette links to `/profile`, but the page doesn't exist yet —
   a known gap, not a broken link by accident.
 - `api/auth/[...all]` — better-auth's catch-all handler (`toNextJsHandler`).
@@ -323,15 +338,20 @@ there once and both the sidebar and cmdk pick it up.
   convention — plain `className`/`cn()` strings there already get full
   Tailwind tooling for free.
 - `src/components/ui/*` — a hand-copied shadcn/radix-based primitive set
-  (button, card, dialog, dropdown, popover, hover-card, sidebar, table,
-  input-otp,
-  command palette via `cmdk`, etc.), not pulled in via the shadcn CLI
-  (`components.json` exists mainly for editor tooling/import aliases).
+  (button, card, dialog, alert-dialog, dropdown, popover, hover-card,
+  select, sidebar, table, input-otp, command palette via `cmdk`, etc.).
+  Popover, hover-card, select, and alert-dialog came from `bunx shadcn@latest
+add <name>` (the `shadcn` devDependency), then were reformatted to this
+  repo's style (arrow consts, tabs). **Never let the CLI overwrite
+  `button.tsx`** — it replaces this project's custom `primary` variant and
+  default `type="button"` with upstream's; revert it if `add` touches it.
+  `select.tsx`'s trigger uses `border-input-accent`/`bg-input` to match
+  `Input`.
 - `src/components/ui/data-table.tsx` — the generic table primitive:
   `dataTableFeatures` wires up `@tanstack/react-table`'s column filtering,
   global filtering, column faceting, column visibility, and row selection
   features (plus `includesString`/`arrHas` filter fns); `useDataTable({
-  columns, data, initialState? })` builds a table instance from those
+columns, data, initialState? })` builds a table instance from those
   features (`initialState.columnVisibility` sets which columns start
   hidden), and `<DataTable table={table} />` renders it. Column `meta`
   supports
@@ -339,7 +359,7 @@ there once and both the sidebar and cmdk pick it up.
   via module augmentation) for the primary-column-links-to-detail-page
   pattern.
 - `src/components/ui/data-table-toolbar.tsx` — `<DataTableToolbar table
-  searchPlaceholder filters exportFileName children? />`: a debounced global
+searchPlaceholder filters exportFileName children? />`: a debounced global
   search input (`useDebouncedCallback`), optional per-column faceted filters,
   a "Reset" button (shown once any filter/search is active), a selected-row
   count, a CSV/JSON export button (exports the selection if any rows are
@@ -382,8 +402,21 @@ there once and both the sidebar and cmdk pick it up.
   title (a single `Badge` combining `jobTitle`/`jobSite`, e.g. "Server
   Specialist · Copenhagen"). `agreement` is a variant-per-type badge
   column hidden by default via `useDataTable`'s `initialState:
-  {columnVisibility: {agreement: false}}` — toggle it back on from the
+{columnVisibility: {agreement: false}}` — toggle it back on from the
   toolbar's "View" menu.
+- `src/components/user-details.tsx` — client component for
+  `/users/[userId]`: a two-column layout — form-field card (`Field`/`Input`
+  per data point; name, email, gender, pronouns always read-only) and an
+  "Actions" card. **Edit** flips phone number/job title/job site/agreement
+  into editable inputs/`Select`s (react-hook-form + zod, `users.update`,
+  then `router.refresh()`); the card swaps to Save/Cancel while editing.
+  **Report** links to `/tickets/new?about=<id>`.
+- `src/components/ticket-details.tsx` — client component for
+  `/tickets/[ticketId]`: same two-column layout, all fields read-only.
+  Actions: **Close** (support incidents) or **Complete** (other types) →
+  `setStatus: closed`; **Escalate** → `escalate` (disabled once already high
+  priority + in progress); **Reopen** replaces both when the ticket is
+  closed → `setStatus: open`. Each sits behind an `AlertDialog` confirm.
 
 State: `store.app.ts` (zustand) only holds `cmdkIsOpen` — deliberately tiny,
 since most state is server data via tRPC/React Query or ephemeral UI state
@@ -420,8 +453,6 @@ that org's admin, so manual sign-in testing stays predictable.
 - **Reports** — KPI/graph dashboard (cases per user, "most troublesome"
   user, ticket volume over time, etc). Meant to be the first consumer of
   `requiresPlanFeature("reports")` — free-plan orgs won't have access.
-- **`/users/[id]`** — `/users` links each row to it, but no detail page
-  exists yet (mirrors `/tickets/[ticketId]`'s pattern once built).
 - **cmdk "recently opened" / result ranking** — the command palette's search
   results (`routers/search.ts`) are unordered beyond the DB query's own
   ordering; no per-user recency tracking or relevance scoring yet.

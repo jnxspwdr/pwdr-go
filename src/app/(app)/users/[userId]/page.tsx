@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { ServerCrumbs } from "~/components/breadcrumb-portal";
+import { UserDetails } from "~/components/user-details";
 import { api } from "~/trpc/server";
 
 export default async function UserDetailsPage({
@@ -18,7 +19,7 @@ export default async function UserDetailsPage({
 			<ServerCrumbs
 				crumbs={[{ title: "users", href: "/users" }, { title: user.name }]}
 			/>
-			<div>{user.name}</div>
+			<UserDetails user={user} />
 		</>
 	);
 }
