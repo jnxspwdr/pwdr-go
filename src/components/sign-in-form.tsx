@@ -32,6 +32,7 @@ export const SignInForm = () => {
 	const router = useRouter();
 	const [step, setStep] = React.useState(0);
 	const otpRef = React.useRef<HTMLInputElement>(null);
+	const isVerifyingOtp = React.useRef(false);
 
 	const form = useForm<z.infer<typeof signInFormSchema>>({
 		resolver: zodResolver(signInFormSchema),
@@ -61,10 +62,15 @@ export const SignInForm = () => {
 	};
 
 	const onSubmit = async (data: z.infer<typeof signInFormSchema>) => {
+		if (isVerifyingOtp.current) return;
+		isVerifyingOtp.current = true;
+
 		const { error } = await authClient.signIn.emailOtp({
 			email: data.email,
 			otp: data.code,
 		});
+
+		isVerifyingOtp.current = false;
 
 		if (error) {
 			form.setError("code", {
@@ -219,7 +225,12 @@ export const SignInForm = () => {
 						>
 							<ArrowLeft /> Back
 						</Button>
-						<Button className="flex-1" variant={"primary"} type="submit">
+						<Button
+							className="flex-1"
+							disabled={form.formState.isSubmitting}
+							variant={"primary"}
+							type="submit"
+						>
 							Sign in
 						</Button>
 					</div>
