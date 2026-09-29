@@ -332,7 +332,7 @@ Toggle sidebar. It reads the session via `authClient.useSession()` and
   sidebar/header).
 - `(app)/` layout — sidebar + header shell (`AppSidebar`, `AppHeader`,
   breadcrumb portal, command palette), wraps everything below:
-  - `/dashboard` — static placeholder cards, no real data yet.
+  - `/dashboard` — `WelcomeCard` (session user: avatar, email, job site + agreement); no other cards yet.
   - `/tickets` — server-rendered list, fetches via `api.tickets.list()`,
     renders `<TicketsTable>`.
   - `/tickets/[ticketId]` — server-rendered detail page; `NOT_FOUND` tRPC
@@ -495,7 +495,7 @@ that org's admin, so manual sign-in testing stays predictable.
 
 ## Known gaps (intentionally out of scope, not forgotten)
 
-- Dashboard is static placeholder content — no real metrics/queries.
+- Dashboard only has the welcome card — no real metrics/queries.
 - No ticket update/assign/status-change/comment mutations — create-only.
 - No `/profile` page, despite the command palette linking to it.
 - No org switcher UI (schema/session support exists; every seeded user only
