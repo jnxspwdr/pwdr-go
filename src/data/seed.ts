@@ -5,11 +5,12 @@ import { env } from "~/env";
 import { db } from "~/server/db";
 import {
 	member as memberTable,
+	orgOptions as orgOptionsTable,
 	organization as organizationTable,
 	tickets as ticketsTable,
 	user as userTable,
 } from "~/server/db/schema";
-import { User } from "~/types/schemas/user";
+import { JOB_SITES, JOB_TITLES, User } from "~/types/schemas/user";
 
 const currentYear = new Date().getFullYear();
 const REF_DATE = `${currentYear}-01-01T00:00:00.000Z`;
@@ -53,6 +54,7 @@ const tickets = orgs.flatMap((org) => generateTickets(org.users, org.id, 50));
 // violations. Deletion order follows FK dependencies (tickets/member first);
 // session/account/verification cascade-delete off `user`.
 await db.delete(ticketsTable);
+await db.delete(orgOptionsTable);
 await db.delete(memberTable);
 await db.delete(organizationTable);
 await db.delete(userTable);
@@ -95,6 +97,22 @@ await db.insert(memberTable).values(
 );
 
 await db.insert(ticketsTable).values(tickets);
+
+// Every org gets the default job sites/titles; Acme also gets a custom
+// agreement type to exercise the per-org agreement list.
+await db
+	.insert(orgOptionsTable)
+	.values(
+		orgs.flatMap((org) =>
+			[
+				...JOB_SITES.map((value) => ({ kind: "job_site" as const, value })),
+				...JOB_TITLES.map((value) => ({ kind: "job_title" as const, value })),
+				...(org.slug === "acme-corp"
+					? [{ kind: "agreement" as const, value: "seasonal" }]
+					: []),
+			].map((o) => ({ id: crypto.randomUUID(), organizationId: org.id, ...o })),
+		),
+	);
 
 console.log(
 	`seeded ${orgs.length} organizations, ${users.length} users, and ${tickets.length} tickets`,
