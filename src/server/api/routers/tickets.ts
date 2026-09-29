@@ -15,13 +15,18 @@ const generateTicketNumber = () => {
 };
 
 export const ticketsRouter = createTRPCRouter({
-	list: orgProcedure.query(({ ctx }) => {
-		return ctx.db.query.tickets.findMany({
-			where: eq(tickets.organizationId, ctx.org.id),
-			with: { reportedBy: true, assignedTo: true },
-			orderBy: (tickets, { desc }) => [desc(tickets.updatedAt)],
-		});
-	}),
+	list: orgProcedure
+		.input(
+			z.object({ limit: z.number().int().positive().optional() }).optional(),
+		)
+		.query(({ ctx, input }) => {
+			return ctx.db.query.tickets.findMany({
+				where: eq(tickets.organizationId, ctx.org.id),
+				with: { reportedBy: true, assignedTo: true },
+				orderBy: (tickets, { desc }) => [desc(tickets.updatedAt)],
+				limit: input?.limit,
+			});
+		}),
 
 	byId: orgProcedure
 		.input(z.object({ id: z.string() }))

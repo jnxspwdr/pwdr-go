@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { ServerCrumbs } from "~/components/breadcrumb-portal";
+import { RecentCasesCard } from "~/components/recent-cases-card";
 import { WelcomeCard } from "~/components/welcome-card";
 import { auth } from "~/server/auth";
 
@@ -13,6 +14,7 @@ export default async function DashboardPage() {
 			<ServerCrumbs crumbs={[{ title: "dashboard" }]} />
 			<div className="grid grid-cols-1 gap-(--card-gap) [--card-gap:--spacing(4)] @2xl:grid-cols-2">
 				<WelcomeCard user={session.user} />
+				<RecentCasesCard />
 			</div>
 		</>
 	);

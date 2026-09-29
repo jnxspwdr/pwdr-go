@@ -205,7 +205,7 @@ source of truth, importable from both client and server code (unlike
     Reports (planned) will be the first consumer.
 - `root.ts` — `appRouter` mounts `tickets`, `organization`, `users`, and `search`.
 - `routers/tickets.ts`:
-  - `list` — all tickets for the caller's active org, with `reportedBy`/`assignedTo` joined.
+  - `list` — tickets for the caller's active org (newest activity first, optional `{ limit }`), with `reportedBy`/`assignedTo` joined.
   - `byId` — single ticket, scoped to the caller's org (cross-org IDs 404, not leak).
   - `create` — validates `title`/`description`/`priority` via Zod, always
     creates as `status: "open"`, `type: "support incident"`,
@@ -332,7 +332,7 @@ Toggle sidebar. It reads the session via `authClient.useSession()` and
   sidebar/header).
 - `(app)/` layout — sidebar + header shell (`AppSidebar`, `AppHeader`,
   breadcrumb portal, command palette), wraps everything below:
-  - `/dashboard` — `WelcomeCard` (session user: avatar, email, job site + agreement); no other cards yet.
+  - `/dashboard` — `WelcomeCard` (session user: avatar, email, job site + agreement) and `RecentCasesCard` (5 latest tickets via `api.tickets.list({ limit: 5 })`).
   - `/tickets` — server-rendered list, fetches via `api.tickets.list()`,
     renders `<TicketsTable>`.
   - `/tickets/[ticketId]` — server-rendered detail page; `NOT_FOUND` tRPC
@@ -495,7 +495,7 @@ that org's admin, so manual sign-in testing stays predictable.
 
 ## Known gaps (intentionally out of scope, not forgotten)
 
-- Dashboard only has the welcome card — no real metrics/queries.
+- Dashboard only has welcome + recent-cases cards — no real metrics/queries.
 - No ticket update/assign/status-change/comment mutations — create-only.
 - No `/profile` page, despite the command palette linking to it.
 - No org switcher UI (schema/session support exists; every seeded user only
