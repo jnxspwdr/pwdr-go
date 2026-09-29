@@ -121,6 +121,11 @@ drizzle adapter — see the comment at the top of the file):
   - `priority`: numeric, with named constants `low=10 normal=20 high=30`
     (`TICKET_PRIORITIES` in `src/types/schemas/ticket.ts`) — numeric so more
     granularity can be added later without a migration.
+- `org_options` (`orgOptions`) — per-org pick-list values: `id`,
+  `organizationId` FK, `kind` (pg enum `job_site | job_title | agreement`),
+  `value`; unique on `(organizationId, kind, value)`. Read via
+  `organization.options`. `agreement` rows are custom types on top of the
+  built-in `AGREEMENT_TYPES`.
 
 Every org-scoped table carries `organizationId`; tenant isolation is enforced
 in the tRPC layer (below), not at the DB layer (no RLS).
@@ -203,6 +208,12 @@ source of truth, importable from both client and server code (unlike
 - `routers/organization.ts`:
   - `current` — the caller's active org (`id`, `name`, `plan`). Only
     consumer so far is manual verification; no UI reads it yet.
+  - `options` — `{jobSites, jobTitles, agreementTypes}` pick-lists for the
+    caller's org, from the `org_options` table (`kind`: `job_site` |
+    `job_title` | `agreement`). `agreementTypes` = built-in
+    `AGREEMENT_TYPES` + the org's custom `agreement` rows. Caveat:
+    `user.agreement` is still a pg enum of the built-ins, so a custom
+    agreement can be listed but not yet assigned to a user.
 - `routers/users.ts`:
   - `list` — every `user` in the caller's active org, queried through
     `member` (`with: { user: true }`), per the "user is not org-scoped"
@@ -444,6 +455,9 @@ that org's admin, so manual sign-in testing stays predictable.
   used by `seed.ts` once per org.
 - `generate-tickets.ts` — faker-generated tickets per org, validated against
   `ticketSchema` before insert.
+- `seed.ts` also fills `org_options`: every org gets `JOB_SITES`/`JOB_TITLES`
+  as its job sites/titles; Acme additionally gets a custom `seasonal`
+  agreement.
 - Faker seed is either `ENV_FAKER_SEED` or a fresh random seed logged to the
   console at generation time, so a run can be reproduced later if needed.
 

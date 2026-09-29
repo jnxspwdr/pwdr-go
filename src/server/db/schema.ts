@@ -7,6 +7,7 @@ import {
 	pgTable,
 	text,
 	timestamp,
+	unique,
 } from "drizzle-orm/pg-core";
 import { PLAN_IDS } from "~/lib/plans";
 import { TICKET_STATUSES, TICKET_TYPES } from "~/types/schemas/ticket";
@@ -197,3 +198,22 @@ export const ticketsRelations = relations(tickets, ({ one }) => ({
 		relationName: "assignedTickets",
 	}),
 }));
+
+// Per-org pick-list values for user fields. Job sites and job titles are
+// entirely org-defined; "agreement" rows are custom types on top of the
+// built-in AGREEMENT_TYPES.
+export const ORG_OPTION_KINDS = ["job_site", "job_title", "agreement"] as const;
+export const orgOptionKindEnum = pgEnum("org_option_kind", ORG_OPTION_KINDS);
+
+export const orgOptions = pgTable(
+	"org_options",
+	{
+		id: text("id").primaryKey(),
+		organizationId: text("organization_id")
+			.notNull()
+			.references(() => organization.id, { onDelete: "cascade" }),
+		kind: orgOptionKindEnum("kind").notNull(),
+		value: text("value").notNull(),
+	},
+	(t) => [unique().on(t.organizationId, t.kind, t.value)],
+);
