@@ -1,40 +1,18 @@
-import Image from "next/image";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { ServerCrumbs } from "~/components/breadcrumb-portal";
-import { Card, CardContent, CardHeader, CardTitle } from "~/ui/card";
+import { WelcomeCard } from "~/components/welcome-card";
+import { auth } from "~/server/auth";
 
 export default async function DashboardPage() {
+	const session = await auth.api.getSession({ headers: await headers() });
+	if (!session) redirect("/sign-in");
+
 	return (
 		<>
 			<ServerCrumbs crumbs={[{ title: "dashboard" }]} />
 			<div className="grid grid-cols-1 gap-(--card-gap) [--card-gap:--spacing(4)] @2xl:grid-cols-2">
-				<div className="flex flex-col gap-(--card-gap)">
-					<Card>
-						<CardHeader>
-							<CardTitle>Card 1</CardTitle>
-						</CardHeader>
-						<CardContent>foo bar</CardContent>
-					</Card>
-					<Card>
-						<CardHeader>
-							<CardTitle>Card 2</CardTitle>
-						</CardHeader>
-						<CardContent>foo bar</CardContent>
-					</Card>
-				</div>
-				<div className="flex flex-col gap-(--card-gap)">
-					<Card>
-						<CardHeader>
-							<CardTitle>Card 3</CardTitle>
-						</CardHeader>
-						<CardContent>foo bar</CardContent>
-					</Card>
-					<Card>
-						<CardHeader>
-							<CardTitle>Card 4</CardTitle>
-						</CardHeader>
-						<CardContent>foo bar</CardContent>
-					</Card>
-				</div>
+				<WelcomeCard user={session.user} />
 			</div>
 		</>
 	);
