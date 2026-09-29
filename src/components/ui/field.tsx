@@ -62,6 +62,8 @@ const fieldVariants = cva(
 		"group/field flex w-full gap-1 data-[invalid=true]:text-destructive relative has-[label[data-fancy='true']]:mt-(--label-height) [--label-height:24px]",
 		"has-[input:focus-visible,textarea:focus-visible]:[&_[data-slot='field-label-wrapper']]:border-ring has-[input[aria-invalid='true'],textarea[aria-invalid='true']]:[&_[data-slot='field-label-wrapper']]:border-destructive",
 		"has-[input:focus-visible]:[&_input,&_textarea,&_[data-slot='input-group']]:rounded-tl-none! has-[input[value]:not([value=''])]:[&,&_[data-slot='input-group']]:rounded-tl-none!",
+		// a `Label` beside the control flows into it: square off the control's right edge
+		"has-data-[slot=label]:[&_input,&_textarea,&_[data-slot='input-group']]:rounded-r-none",
 	),
 	{
 		variants: {
