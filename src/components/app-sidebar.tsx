@@ -3,12 +3,10 @@
 import {
 	LogOutIcon,
 	PanelLeftCloseIcon,
-	PanelLeftIcon,
 	PanelLeftOpenIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import React from "react";
 import {
 	Sidebar,
 	SidebarContent,
@@ -17,7 +15,6 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
-	SidebarTrigger,
 	useSidebar,
 } from "~/components/ui/sidebar";
 import { authClient } from "~/lib/auth-client";
@@ -70,7 +67,11 @@ export const AppSidebar = () => {
 						<SidebarMenuButton size={"lg"}>{user?.firstName}</SidebarMenuButton>
 					</SidebarMenuItem>
 					<SidebarMenuItem>
-						<SidebarMenuButton tooltip="Sign out" onClick={handleSignOut}>
+						<SidebarMenuButton
+							variant={"destructive"}
+							tooltip="Sign out"
+							onClick={handleSignOut}
+						>
 							<LogOutIcon />
 							Sign out
 						</SidebarMenuButton>
