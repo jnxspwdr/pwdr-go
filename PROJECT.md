@@ -152,11 +152,13 @@ too. Exports `useSession` / `signOut`.
 **Route protection** (`src/proxy.ts` — Next 16 renamed `middleware.ts` to
 `proxy.ts`, and the exported function must literally be named `proxy` or the
 production build fails): optimistic cookie-presence check only (not
-signature/DB validated — cheap enough to run on every request). Redirects
-unauthenticated requests to `/sign-in`, and redirects already-authenticated
-requests away from `/sign-in` to `/dashboard`. Anything that actually needs
-the session (Server Components, protected tRPC procedures) re-verifies
-against the DB via `auth.api.getSession`.
+signature/DB validated — cheap enough to run on every request). Only
+redirects cookie-less requests to `/sign-in`; it deliberately never bounces
+away from `/sign-in`, since a stale cookie (session deleted or expired, e.g.
+after a reseed) would then loop. Real validation happens against the DB via
+`auth.api.getSession`: the `(app)` layout redirects to `/sign-in` when there
+is no valid session, and the `/sign-in` page redirects to `/dashboard` when
+there is one. Protected tRPC procedures re-verify too.
 
 ## Plans / feature gating (`src/lib/plans.ts`)
 
