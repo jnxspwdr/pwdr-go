@@ -1,14 +1,8 @@
 "use client";
 
-import {
-	LogOutIcon,
-	PanelLeftCloseIcon,
-	PanelLeftIcon,
-	PanelLeftOpenIcon,
-} from "lucide-react";
+import { PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import React from "react";
+import { usePathname } from "next/navigation";
 import {
 	Sidebar,
 	SidebarContent,
@@ -17,25 +11,14 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
-	SidebarTrigger,
 	useSidebar,
 } from "~/components/ui/sidebar";
-import { authClient } from "~/lib/auth-client";
+import { NavUser } from "~/components/nav-user";
 import { MAIN_NAV_ITEMS } from "~/lib/nav";
 
 export const AppSidebar = () => {
 	const pathname = usePathname();
-	const router = useRouter();
 	const { state, toggleSidebar } = useSidebar();
-	const { data: session } = authClient.useSession();
-	const user = session?.user;
-
-	const handleSignOut = async () => {
-		await authClient.signOut({
-			fetchOptions: { onSuccess: () => router.push("/sign-in") },
-		});
-	};
-
 	return (
 		<Sidebar
 			collapsible="icon"
@@ -65,16 +48,8 @@ export const AppSidebar = () => {
 				</SidebarGroup>
 			</SidebarContent>
 			<SidebarFooter>
+				<NavUser />
 				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton size={"lg"}>{user?.firstName}</SidebarMenuButton>
-					</SidebarMenuItem>
-					<SidebarMenuItem>
-						<SidebarMenuButton tooltip="Sign out" onClick={handleSignOut}>
-							<LogOutIcon />
-							Sign out
-						</SidebarMenuButton>
-					</SidebarMenuItem>
 					<SidebarMenuItem>
 						<SidebarMenuButton onClick={() => toggleSidebar()}>
 							{state === "expanded" ? (
