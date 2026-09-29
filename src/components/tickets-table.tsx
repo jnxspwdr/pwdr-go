@@ -70,7 +70,11 @@ export const TicketsTable = ({ tickets }: { tickets: Ticket[] }) => {
 		ticketStatusColumn,
 	];
 
-	const table = useDataTable({ columns, data: tickets });
+	const table = useDataTable({
+		columns,
+		data: tickets,
+		initialState: { sorting: [{ id: "updatedAt", desc: true }] },
+	});
 
 	return (
 		<div className="space-y-4">

@@ -81,7 +81,10 @@ export const useDataTable = <TData extends RowData>({
 }: {
 	columns: ColumnDef<typeof dataTableFeatures, TData>[];
 	data: TData[];
-	initialState?: { columnVisibility?: Record<string, boolean> };
+	initialState?: {
+		columnVisibility?: Record<string, boolean>;
+		sorting?: { id: string; desc: boolean }[];
+	};
 }) => {
 	return useTable({
 		features: dataTableFeatures,
@@ -134,7 +137,10 @@ export const DataTable = <TData extends RowData>({
 											?.hideHeader ? null : header.column.getCanSort() ? (
 											<button
 												type="button"
-												className="flex h-10 w-full items-center gap-1 px-2 text-left font-medium whitespace-nowrap hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset"
+												className={cn(
+													"flex h-10 w-full items-center gap-1 px-2 text-left font-medium whitespace-nowrap hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset",
+													!sorted && "text-muted-foreground",
+												)}
 												onClick={header.column.getToggleSortingHandler()}
 											>
 												<table.FlexRender header={header} />
@@ -142,7 +148,7 @@ export const DataTable = <TData extends RowData>({
 													asc: <ArrowUpIcon className="size-3.5" />,
 													desc: <ArrowDownIcon className="size-3.5" />,
 												}[sorted as string] ?? (
-													<ArrowUpDownIcon className="size-3.5 opacity-40" />
+													<ArrowUpDownIcon className="size-3.5" />
 												)}
 											</button>
 										) : (
