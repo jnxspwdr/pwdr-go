@@ -285,6 +285,11 @@ No other wiring required — `trpc.search.global.useQuery` already fires
 driven by one shared array, `MAIN_NAV_ITEMS` in `src/lib/nav.ts` — add a page
 there once and both the sidebar and cmdk pick it up.
 
+**Account group**: the last cmdk group ("Account", below an always-shown
+separator) holds Your profile (`/users/<session user id>`), Sign out, and
+Toggle sidebar. It reads the session via `authClient.useSession()` and
+`useSidebar()`, so `Cmdk` must stay inside `SidebarProvider`.
+
 ## Routing (`src/app/`)
 
 - `/` — redirects to `/dashboard`.
