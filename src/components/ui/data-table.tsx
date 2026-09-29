@@ -11,13 +11,19 @@ import {
 	createFacetedRowModel,
 	createFacetedUniqueValues,
 	createFilteredRowModel,
+	createSortedRowModel,
 	filterFn_arrHas,
 	filterFn_includesString,
 	globalFilteringFeature,
-	rowSelectionFeature,
+	rowSortingFeature,
+	sortFn_alphanumeric,
+	sortFn_basic,
+	sortFn_datetime,
+	sortFn_text,
 	tableFeatures,
 	useTable,
 } from "@tanstack/react-table";
+import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { cn } from "cn";
@@ -51,13 +57,20 @@ export const dataTableFeatures = tableFeatures({
 	globalFilteringFeature,
 	columnFacetingFeature,
 	columnVisibilityFeature,
-	rowSelectionFeature,
+	rowSortingFeature,
 	filteredRowModel: createFilteredRowModel(),
+	sortedRowModel: createSortedRowModel(),
 	facetedRowModel: createFacetedRowModel(),
 	facetedUniqueValues: createFacetedUniqueValues(),
 	filterFns: {
 		includesString: filterFn_includesString,
 		arrHas: filterFn_arrHas,
+	},
+	sortFns: {
+		alphanumeric: sortFn_alphanumeric,
+		basic: sortFn_basic,
+		datetime: sortFn_datetime,
+		text: sortFn_text,
 	},
 });
 
@@ -104,7 +117,22 @@ export const DataTable = <TData extends RowData>({
 										key={header.id}
 									>
 										{header.isPlaceholder ||
-										header.column.columnDef.meta?.hideHeader ? null : (
+										header.column.columnDef.meta
+											?.hideHeader ? null : header.column.getCanSort() ? (
+											<button
+												type="button"
+												className="-mx-1 flex items-center gap-1 rounded px-1 hover:bg-muted"
+												onClick={header.column.getToggleSortingHandler()}
+											>
+												<table.FlexRender header={header} />
+												{{
+													asc: <ArrowUpIcon className="size-3.5" />,
+													desc: <ArrowDownIcon className="size-3.5" />,
+												}[header.column.getIsSorted() as string] ?? (
+													<ArrowUpDownIcon className="size-3.5 opacity-40" />
+												)}
+											</button>
+										) : (
 											<table.FlexRender header={header} />
 										)}
 									</TableHead>
@@ -116,10 +144,7 @@ export const DataTable = <TData extends RowData>({
 				<TableBody>
 					{table.getRowModel().rows?.length ? (
 						table.getRowModel().rows.map((row) => (
-							<TableRow
-								key={row.id}
-								data-state={row.getIsSelected() ? "selected" : undefined}
-							>
+							<TableRow key={row.id}>
 								{row.getVisibleCells().map((cell) => {
 									return (
 										<TableCell

@@ -40,6 +40,7 @@ export const UsersTable = ({ users }: { users: User[] }) => {
 				hideHeader: true,
 			},
 			enableGlobalFilter: false,
+			enableSorting: false,
 		},
 		{
 			accessorKey: "name",
@@ -95,6 +96,7 @@ export const UsersTable = ({ users }: { users: User[] }) => {
 			},
 			meta: { fitContent: true },
 			enableGlobalFilter: false,
+			enableSorting: false,
 		},
 		{
 			id: "title",

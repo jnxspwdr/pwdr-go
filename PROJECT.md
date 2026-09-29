@@ -378,8 +378,11 @@ add <name>` (the `shadcn` devDependency), then were reformatted to this
   `Input`.
 - `src/components/ui/data-table.tsx` — the generic table primitive:
   `dataTableFeatures` wires up `@tanstack/react-table`'s column filtering,
-  global filtering, column faceting, column visibility, and row selection
-  features (plus `includesString`/`arrHas` filter fns); `useDataTable({
+  global filtering, column faceting, column visibility, and row sorting
+  features (plus `includesString`/`arrHas` filter fns and
+  `alphanumeric`/`basic`/`datetime`/`text` sort fns). Headers of sortable
+  columns render as click-to-toggle buttons with a direction icon; set
+  `enableSorting: false` on a column def to opt out (avatar, pronouns); `useDataTable({
 columns, data, initialState? })` builds a table instance from those
   features (`initialState.columnVisibility` sets which columns start
   hidden), and `<DataTable table={table} />` renders it. Column `meta`
@@ -390,9 +393,8 @@ columns, data, initialState? })` builds a table instance from those
 - `src/components/ui/data-table-toolbar.tsx` — `<DataTableToolbar table
 searchPlaceholder filters exportFileName children? />`: a debounced global
   search input (`useDebouncedCallback`), optional per-column faceted filters,
-  a "Reset" button (shown once any filter/search is active), a selected-row
-  count, a CSV/JSON export button (exports the selection if any rows are
-  selected, otherwise the filtered rows — see `src/lib/export.ts`), and the
+  a "Reset" button (shown once any filter/search is active), a CSV/JSON
+  export button (exports the filtered, sorted rows — see `src/lib/export.ts`), and the
   column-visibility "View" menu. `children` is an extension point for
   page-specific actions (e.g. a "New ticket" button) rendered alongside
   Export/View.
@@ -419,7 +421,7 @@ searchPlaceholder filters exportFileName children? />`: a debounced global
   see the cmdk recipe above for adding a new one), and a "Settings" group.
   Emoji search/Calculator/Billing/Settings entries are still placeholder
   items with no destination yet.
-- `src/components/tickets-table.tsx` — `DataTable` columns for row selection,
+- `src/components/tickets-table.tsx` — `DataTable` columns for
   title (links to detail page), relative last-active time (`date-fns`), and
   a status badge with variant-per-status color mapping (`filterFn: "arrHas"`
   for the toolbar's status facet). Wraps `<DataTable>` with

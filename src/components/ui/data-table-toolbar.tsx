@@ -46,7 +46,6 @@ export const DataTableToolbar = <TData extends RowData>({
 		table.setGlobalFilter(value as string);
 	}, 300);
 
-	const selectedRowCount = table.getSelectedRowModel().rows.length;
 	const isFiltered =
 		table.state.columnFilters.length > 0 || !!table.state.globalFilter;
 
@@ -57,9 +56,7 @@ export const DataTableToolbar = <TData extends RowData>({
 	};
 
 	const handleExport = (format: "csv" | "json") => {
-		const selectedRows = table.getFilteredSelectedRowModel().rows;
-		const rows =
-			selectedRows.length > 0 ? selectedRows : table.getFilteredRowModel().rows;
+		const rows = table.getRowModel().rows;
 		const columns = table
 			.getVisibleLeafColumns()
 			.filter((column) => column.getCanHide());
@@ -115,11 +112,6 @@ export const DataTableToolbar = <TData extends RowData>({
 				)}
 			</div>
 			<div className="flex items-center gap-2">
-				{selectedRowCount > 0 && (
-					<span className="text-sm text-muted-foreground">
-						{selectedRowCount} selected
-					</span>
-				)}
 				{children}
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
