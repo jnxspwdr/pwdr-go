@@ -404,8 +404,12 @@ searchPlaceholder filters exportFileName children? />`: a debounced global
   column hidden by default via `useDataTable`'s `initialState:
 {columnVisibility: {agreement: false}}` — toggle it back on from the
   toolbar's "View" menu.
+- `FieldDetailInput` (in `src/components/ui/field.tsx`): read-only input for
+  details pages built on `InputGroup`. Shows a copy-to-clipboard icon button
+  when the page is not `editing`; while `editing`, a read-only input is
+  dimmed (`opacity-60`) to signal it can't be changed.
 - `src/components/user-details.tsx` — client component for
-  `/users/[userId]`: a two-column layout — form-field card (`Field`/`Input`
+  `/users/[userId]`: a two-column layout — form-field card (`Field`/`FieldDetailInput`
   per data point; name, email, gender, pronouns always read-only) and an
   "Actions" card. **Edit** flips phone number/job title/job site/agreement
   into editable inputs/`Select`s (react-hook-form + zod, `users.update`,
