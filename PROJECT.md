@@ -149,6 +149,11 @@ too. Exports `useSession` / `signOut`.
 (email → OTP), calls `authClient.emailOtp.sendVerificationOtp` then
 `authClient.signIn.emailOtp`, redirects to `/dashboard` on success.
 
+**Sign-out**: better-auth's catch-all route (`/api/auth/[...all]`) already
+serves `POST /api/auth/sign-out`; no custom endpoint. `AppSidebar` footer has a
+"Sign out" button (above "Toggle sidebar") calling `authClient.signOut` and
+pushing to `/sign-in`.
+
 **Route protection** (`src/proxy.ts` — Next 16 renamed `middleware.ts` to
 `proxy.ts`, and the exported function must literally be named `proxy` or the
 production build fails): optimistic cookie-presence check only (not
