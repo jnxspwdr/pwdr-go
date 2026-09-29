@@ -49,7 +49,7 @@ const FieldGroup = ({ className, ...props }: React.ComponentProps<"div">) => {
 		<div
 			data-slot="field-group"
 			className={cn(
-				"group/field-group @container/field-group flex w-full flex-col gap-7 data-[slot=checkbox-group]:gap-3 [&>[data-slot=field-group]]:gap-4",
+				"group/field-group @container/field-group grid w-full grid-cols-2 gap-7 data-[slot=checkbox-group]:gap-3 [&>[data-slot=field-group]]:gap-4",
 				className,
 			)}
 			{...props}
@@ -215,7 +215,7 @@ const FieldSeparator = ({
 			<Separator className="absolute inset-0 top-1/2" />
 			{children && (
 				<span
-					className="relative mx-auto block w-fit bg-background px-2 text-muted-foreground"
+					className="relative mx-auto block w-fit rounded bg-background px-2 text-muted-foreground"
 					data-slot="field-separator-content"
 				>
 					{children}
