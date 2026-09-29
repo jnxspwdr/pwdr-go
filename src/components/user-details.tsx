@@ -1,15 +1,18 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "cn";
 import { FlagIcon, PencilIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { getInitials } from "~/lib/utils";
 import { trpc } from "~/trpc/react";
 import type { RouterOutputs } from "~/trpc/shared";
 import { AGREEMENT_TYPES, JOB_SITES, JOB_TITLES } from "~/types/schemas/user";
+import { Avatar, AvatarFallback, AvatarImage } from "~/ui/avatar";
 import { Badge } from "~/ui/badge";
 import { Button } from "~/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/ui/card";
@@ -42,6 +45,7 @@ const editUserFormSchema = z.object({
 export const UserDetails = ({ user }: { user: User }) => {
 	const router = useRouter();
 	const [isEditing, setIsEditing] = React.useState(false);
+	const [firstPronoun, ...restPronouns] = user.pronouns;
 
 	const updateUser = trpc.users.update.useMutation({
 		onSuccess: () => {
@@ -66,183 +70,202 @@ export const UserDetails = ({ user }: { user: User }) => {
 	};
 
 	return (
-		<div className="grid items-start gap-6 lg:grid-cols-[1fr_16rem]">
-			<Card>
-				<CardHeader>
-					<CardTitle>{user.name}</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<form
-						id="edit-user-form"
-						onSubmit={form.handleSubmit((data) =>
-							updateUser.mutate({ id: user.id, ...data }),
-						)}
-					>
-						<FieldGroup>
-							<Field>
-								<FieldLabel htmlFor="name-input">Name</FieldLabel>
-								<Input id="name-input" value={user.name} readOnly />
-							</Field>
-							<Field>
-								<FieldLabel htmlFor="email-input">Email</FieldLabel>
-								<Input id="email-input" value={user.email} readOnly />
-							</Field>
-							<Field>
-								<FieldLabel htmlFor="gender-input">Gender</FieldLabel>
-								<Input id="gender-input" value={user.gender} readOnly />
-							</Field>
-							<Field>
-								<FieldLabel disableFancy>Pronouns</FieldLabel>
-								<FieldContent className="flex-row flex-wrap gap-1">
-									{user.pronouns.map((pronoun) => (
-										<Badge key={pronoun} variant="outline">
-											{pronoun}
-										</Badge>
-									))}
-								</FieldContent>
-							</Field>
-
-							<FieldSeparator>Work</FieldSeparator>
-
-							<Controller
-								control={form.control}
-								name="phoneNumber"
-								render={({ field, fieldState }) => (
-									<Field data-invalid={fieldState.invalid}>
-										<FieldLabel htmlFor="phone-input">Phone number</FieldLabel>
-										<Input
-											{...field}
-											id="phone-input"
-											readOnly={!isEditing}
-											aria-invalid={fieldState.invalid}
-										/>
-										{fieldState.invalid && (
-											<FieldError errors={[fieldState.error]} />
-										)}
-									</Field>
+		<div className="grid gap-6">
+			<div className="flex items-center gap-2">
+				<Avatar>
+					<AvatarImage src={user.image ?? ""} alt={`Avatar for ${user.name}	`} />
+					<AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+				</Avatar>
+				<h1 className="text-2xl">{user.name}</h1>
+				{firstPronoun.length > 0 && (
+					<>
+						-
+						<Badge
+							variant="outline"
+							className={cn(
+								"mt-1 truncate",
+								restPronouns.length > 0 && "cursor-default",
+							)}
+						>
+							{firstPronoun}
+							{restPronouns.length > 0 && ` +${restPronouns.length}`}
+						</Badge>
+					</>
+				)}
+			</div>
+			<div className="grid grid-cols-[1fr_16rem] gap-4">
+				<div className="grid gap-4">
+					<Card>
+						<CardContent>
+							<form
+								id="edit-user-form"
+								onSubmit={form.handleSubmit((data) =>
+									updateUser.mutate({ id: user.id, ...data }),
 								)}
-							/>
-							<Controller
-								control={form.control}
-								name="jobTitle"
-								render={({ field, fieldState }) =>
-									isEditing ? (
-										<Field data-invalid={fieldState.invalid}>
-											<FieldLabel disableFancy htmlFor="job-title-select">
-												Job title
-											</FieldLabel>
-											<Select
-												value={field.value}
-												onValueChange={field.onChange}
-											>
-												<SelectTrigger id="job-title-select" className="w-full">
-													<SelectValue />
-												</SelectTrigger>
-												<SelectContent>
-													{JOB_TITLES.map((title) => (
-														<SelectItem key={title} value={title}>
-															{title}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-										</Field>
-									) : (
-										<Field>
-											<FieldLabel htmlFor="job-title-input">
-												Job title
-											</FieldLabel>
-											<Input
-												id="job-title-input"
-												value={field.value}
-												readOnly
-											/>
-										</Field>
-									)
-								}
-							/>
-							<Controller
-								control={form.control}
-								name="jobSite"
-								render={({ field, fieldState }) =>
-									isEditing ? (
-										<Field data-invalid={fieldState.invalid}>
-											<FieldLabel disableFancy htmlFor="job-site-select">
-												Job site
-											</FieldLabel>
-											<Select
-												value={field.value}
-												onValueChange={field.onChange}
-											>
-												<SelectTrigger id="job-site-select" className="w-full">
-													<SelectValue />
-												</SelectTrigger>
-												<SelectContent>
-													{JOB_SITES.map((site) => (
-														<SelectItem key={site} value={site}>
-															{site}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-										</Field>
-									) : (
-										<Field>
-											<FieldLabel htmlFor="job-site-input">Job site</FieldLabel>
-											<Input id="job-site-input" value={field.value} readOnly />
-										</Field>
-									)
-								}
-							/>
-							<Controller
-								control={form.control}
-								name="agreement"
-								render={({ field, fieldState }) =>
-									isEditing ? (
-										<Field data-invalid={fieldState.invalid}>
-											<FieldLabel disableFancy htmlFor="agreement-select">
-												Agreement
-											</FieldLabel>
-											<Select
-												value={field.value}
-												onValueChange={field.onChange}
-											>
-												<SelectTrigger id="agreement-select" className="w-full">
-													<SelectValue />
-												</SelectTrigger>
-												<SelectContent>
-													{AGREEMENT_TYPES.map((agreement) => (
-														<SelectItem key={agreement} value={agreement}>
-															{agreement}
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-										</Field>
-									) : (
-										<Field>
-											<FieldLabel htmlFor="agreement-input">
-												Agreement
-											</FieldLabel>
-											<Input
-												id="agreement-input"
-												value={field.value}
-												readOnly
-											/>
-										</Field>
-									)
-								}
-							/>
-						</FieldGroup>
-					</form>
-				</CardContent>
-			</Card>
+							>
+								<FieldGroup>
+									<Field>
+										<FieldLabel htmlFor="email-input">Email</FieldLabel>
+										<Input id="email-input" value={user.email} readOnly />
+									</Field>
+									<Field>
+										<FieldLabel htmlFor="gender-input">Gender</FieldLabel>
+										<Input id="gender-input" value={user.gender} readOnly />
+									</Field>
 
-			<Card>
-				<CardHeader>
-					<CardTitle>Actions</CardTitle>
-				</CardHeader>
-				<CardContent className="flex flex-col gap-2">
+									<Controller
+										control={form.control}
+										name="phoneNumber"
+										render={({ field, fieldState }) => (
+											<Field data-invalid={fieldState.invalid}>
+												<FieldLabel htmlFor="phone-input">
+													Phone number
+												</FieldLabel>
+												<Input
+													{...field}
+													id="phone-input"
+													readOnly={!isEditing}
+													aria-invalid={fieldState.invalid}
+												/>
+												{fieldState.invalid && (
+													<FieldError errors={[fieldState.error]} />
+												)}
+											</Field>
+										)}
+									/>
+									<Controller
+										control={form.control}
+										name="jobTitle"
+										render={({ field, fieldState }) =>
+											isEditing ? (
+												<Field data-invalid={fieldState.invalid}>
+													<FieldLabel disableFancy htmlFor="job-title-select">
+														Job title
+													</FieldLabel>
+													<Select
+														value={field.value}
+														onValueChange={field.onChange}
+													>
+														<SelectTrigger
+															id="job-title-select"
+															className="w-full"
+														>
+															<SelectValue />
+														</SelectTrigger>
+														<SelectContent>
+															{JOB_TITLES.map((title) => (
+																<SelectItem key={title} value={title}>
+																	{title}
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+												</Field>
+											) : (
+												<Field>
+													<FieldLabel htmlFor="job-title-input">
+														Job title
+													</FieldLabel>
+													<Input
+														id="job-title-input"
+														value={field.value}
+														readOnly
+													/>
+												</Field>
+											)
+										}
+									/>
+									<Controller
+										control={form.control}
+										name="jobSite"
+										render={({ field, fieldState }) =>
+											isEditing ? (
+												<Field data-invalid={fieldState.invalid}>
+													<FieldLabel disableFancy htmlFor="job-site-select">
+														Job site
+													</FieldLabel>
+													<Select
+														value={field.value}
+														onValueChange={field.onChange}
+													>
+														<SelectTrigger
+															id="job-site-select"
+															className="w-full"
+														>
+															<SelectValue />
+														</SelectTrigger>
+														<SelectContent>
+															{JOB_SITES.map((site) => (
+																<SelectItem key={site} value={site}>
+																	{site}
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+												</Field>
+											) : (
+												<Field>
+													<FieldLabel htmlFor="job-site-input">
+														Job site
+													</FieldLabel>
+													<Input
+														id="job-site-input"
+														value={field.value}
+														readOnly
+													/>
+												</Field>
+											)
+										}
+									/>
+									<Controller
+										control={form.control}
+										name="agreement"
+										render={({ field, fieldState }) =>
+											isEditing ? (
+												<Field data-invalid={fieldState.invalid}>
+													<FieldLabel disableFancy htmlFor="agreement-select">
+														Agreement
+													</FieldLabel>
+													<Select
+														value={field.value}
+														onValueChange={field.onChange}
+													>
+														<SelectTrigger
+															id="agreement-select"
+															className="w-full"
+														>
+															<SelectValue />
+														</SelectTrigger>
+														<SelectContent>
+															{AGREEMENT_TYPES.map((agreement) => (
+																<SelectItem key={agreement} value={agreement}>
+																	{agreement}
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+												</Field>
+											) : (
+												<Field>
+													<FieldLabel htmlFor="agreement-input">
+														Agreement
+													</FieldLabel>
+													<Input
+														id="agreement-input"
+														value={field.value}
+														readOnly
+													/>
+												</Field>
+											)
+										}
+									/>
+								</FieldGroup>
+							</form>
+						</CardContent>
+					</Card>
+				</div>
+
+				<div className="flex flex-col gap-2">
 					{isEditing ? (
 						<>
 							<Button
@@ -277,8 +300,8 @@ export const UserDetails = ({ user }: { user: User }) => {
 							{updateUser.error.message}
 						</div>
 					)}
-				</CardContent>
-			</Card>
+				</div>
+			</div>
 		</div>
 	);
 };
