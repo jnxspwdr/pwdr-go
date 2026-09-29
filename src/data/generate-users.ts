@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { faker, SexType } from "@faker-js/faker";
 import { FAKER_SEED } from "~/data/seed";
 import { shuffle } from "~/lib/utils";
@@ -157,6 +158,12 @@ export const generateUsers = (): User[] => {
 	return users;
 };
 
+// Stored inline as a base64 data URI so the avatar doesn't depend on a
+// third-party host.
+const POWDER_AVATAR = `data:image/png;base64,${readFileSync(
+	new URL("./assets/powder-avatar.png", import.meta.url),
+).toString("base64")}`;
+
 // "Powder" is a distinct admin account per organization (not one account
 // shared across orgs), so each org gets its own login —
 // e.g. jnxspwdr@acme.com, jnxspwdr@globex.com — rather than pwdr needing
@@ -171,7 +178,7 @@ export const createPwdrUser = (emailDomain: string): User => {
 		gender: "Agender",
 		pronouns: ["they/them", "any/all"],
 		email: `jnxspwdr@${emailDomain}`,
-		avatar: "https://imgur.com/gallery/jinx-pfp-v3-256-eWBdJWx#S0FXGEn",
+		avatar: POWDER_AVATAR,
 		phoneNumber: faker.phone.number({ style: "international" }),
 		jobSite: faker.helpers.arrayElement(JOB_SITES),
 		jobTitle: "HR Manager",
