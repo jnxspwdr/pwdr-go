@@ -381,7 +381,8 @@ add <name>` (the `shadcn` devDependency), then were reformatted to this
   global filtering, column faceting, column visibility, and row sorting
   features (plus `includesString`/`arrHas` filter fns and
   `alphanumeric`/`basic`/`datetime`/`text` sort fns). Headers of sortable
-  columns render as click-to-toggle buttons with a direction icon; set
+  columns render a full-cell `<button>` (cell padding moves onto it) that toggles
+  sort with a direction icon, and the `th` carries `aria-sort`; set
   `enableSorting: false` on a column def to opt out (avatar, pronouns); `useDataTable({
 columns, data, initialState? })` builds a table instance from those
   features (`initialState.columnVisibility` sets which columns start

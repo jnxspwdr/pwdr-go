@@ -106,14 +106,27 @@ export const DataTable = <TData extends RowData>({
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow key={headerGroup.id}>
 							{headerGroup.headers.map((header) => {
+								const sorted = header.column.getIsSorted();
+
 								return (
 									<TableHead
 										className={cn(
 											"min-w-(--cell-min-width)",
 											header.column.columnDef.meta?.fitContent &&
 												"w-px min-w-0 whitespace-nowrap",
+											// sort button owns the cell padding: whole cell is its click target
+											header.column.getCanSort() && "p-0",
 											header.column.columnDef.meta?.columnClassName,
 										)}
+										aria-sort={
+											header.column.getCanSort()
+												? sorted === "asc"
+													? "ascending"
+													: sorted === "desc"
+														? "descending"
+														: "none"
+												: undefined
+										}
 										key={header.id}
 									>
 										{header.isPlaceholder ||
@@ -121,14 +134,14 @@ export const DataTable = <TData extends RowData>({
 											?.hideHeader ? null : header.column.getCanSort() ? (
 											<button
 												type="button"
-												className="-mx-1 flex items-center gap-1 rounded px-1 hover:bg-muted"
+												className="flex h-10 w-full items-center gap-1 px-2 text-left font-medium whitespace-nowrap hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset"
 												onClick={header.column.getToggleSortingHandler()}
 											>
 												<table.FlexRender header={header} />
 												{{
 													asc: <ArrowUpIcon className="size-3.5" />,
 													desc: <ArrowDownIcon className="size-3.5" />,
-												}[header.column.getIsSorted() as string] ?? (
+												}[sorted as string] ?? (
 													<ArrowUpDownIcon className="size-3.5 opacity-40" />
 												)}
 											</button>
