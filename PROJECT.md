@@ -244,12 +244,14 @@ source of truth, importable from both client and server code (unlike
 
 - `src/trpc/server.ts` — `api`, a direct in-process caller (no HTTP hop) for
   Server Components, built via `createCaller` + `createTRPCContext` from
-  request headers.
+  request headers. An `UNAUTHORIZED` error redirects to `/sign-in` (via
+  the caller's `onError`) rather than reaching Next's error boundary.
 - `src/trpc/react.tsx` — `trpc`, a React Query–backed client for Client
   Components, POSTing to `/api/trpc` (`src/app/api/trpc/[trpc]/route.ts`,
   a plain `fetchRequestHandler`). Uses `superjson` as the transformer (so
   `Date`s etc. survive the wire) and a shared `QueryClient` config
-  (`src/trpc/query-client.ts`, 30s `staleTime`).
+  (`src/trpc/query-client.ts`, 30s `staleTime`; its query/mutation caches
+  send the browser to `/sign-in` on an `UNAUTHORIZED` error).
 - `src/trpc/shared.ts` — `RouterInputs`/`RouterOutputs` type helpers, used
   e.g. by `tickets-table.tsx` to type its rows off the actual router output.
 
