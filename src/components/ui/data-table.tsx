@@ -163,7 +163,8 @@ export const DataTable = <TData extends RowData>({
 				<TableBody>
 					{table.getRowModel().rows?.length ? (
 						table.getRowModel().rows.map((row) => (
-							<TableRow key={row.id}>
+							// relative: containing block for the href link's ::after overlay
+							<TableRow className="relative" key={row.id}>
 								{row.getVisibleCells().map((cell) => {
 									return (
 										<TableCell
@@ -178,7 +179,8 @@ export const DataTable = <TData extends RowData>({
 										>
 											{cell.column.columnDef.meta?.getHref ? (
 												<Link
-													className="hover:underline"
+													// ::after stretches over the whole row (nearest positioned ancestor)
+													className="after:absolute after:inset-0 hover:underline focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring/50 focus-visible:after:ring-inset"
 													href={cell.column.columnDef.meta?.getHref(cell)}
 												>
 													<table.FlexRender cell={cell} />

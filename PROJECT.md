@@ -391,7 +391,11 @@ columns, data, initialState? })` builds a table instance from those
   supports
   `primary`/`fitContent`/`hideHeader`/`columnClassName`/`getHref` (declared
   via module augmentation) for the primary-column-links-to-detail-page
-  pattern.
+  pattern. The `getHref` link is a "stretched link": rows are
+  `position: relative` and the link's `::after` covers the whole row, so
+  the entire row is the click target with no `onClick` on the `<tr>`.
+  Don't put other interactive controls in rows without lifting them
+  (`relative z-10`) above the overlay.
 - `src/components/ui/data-table-toolbar.tsx` — `<DataTableToolbar table
 searchPlaceholder filters exportFileName children? />`: a debounced global
   search input (`useDebouncedCallback`), optional per-column faceted filters,
