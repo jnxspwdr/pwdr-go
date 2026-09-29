@@ -332,7 +332,7 @@ Toggle sidebar. It reads the session via `authClient.useSession()` and
   sidebar/header).
 - `(app)/` layout — sidebar + header shell (`AppSidebar`, `AppHeader`,
   breadcrumb portal, command palette), wraps everything below:
-  - `/dashboard` — `WelcomeCard` (session user: avatar, email, job site + agreement) and `RecentCasesCard` (5 latest tickets via `api.tickets.list({ limit: 5 })`).
+  - `/dashboard` — two flex-col columns of fixed-height cards (so cards don't stretch to row height): `WelcomeCard` (session user: avatar, email, job site + agreement) and `RecentCasesCard` (client; trimmed `DataTable` of the 5 latest tickets — title + status columns shared with `TicketsTable` via `ticketTitleColumn`/`ticketStatusColumn`).
   - `/tickets` — server-rendered list, fetches via `api.tickets.list()`,
     renders `<TicketsTable>`.
   - `/tickets/[ticketId]` — server-rendered detail page; `NOT_FOUND` tRPC
