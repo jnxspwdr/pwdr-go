@@ -4,6 +4,8 @@ import {
 	ArrowDownUp,
 	Calculator,
 	CornerDownLeft,
+	LogOutIcon,
+	PanelLeftIcon,
 	CreditCard,
 	Settings,
 	Smile,
@@ -26,6 +28,8 @@ import {
 	CommandShortcut,
 } from "~/components/ui/command";
 import { Separator } from "~/components/ui/separator";
+import { useSidebar } from "~/components/ui/sidebar";
+import { authClient } from "~/lib/auth-client";
 import { MAIN_NAV_ITEMS } from "~/lib/nav";
 import { useAppStore } from "~/store.app";
 import { trpc } from "~/trpc/react";
@@ -87,6 +91,8 @@ function SearchResultGroup<T extends { id: string }>({
 
 export const Cmdk = () => {
 	const router = useRouter();
+	const { toggleSidebar } = useSidebar();
+	const { data: session } = authClient.useSession();
 	const open = useAppStore((state) => state.cmdkIsOpen);
 	const setOpen = useAppStore((state) => state.setCmdkIsOpen);
 	const [cmdkInput, setCmdkInput] = React.useState("");
@@ -198,6 +204,11 @@ export const Cmdk = () => {
 
 	const showSearchResults = debouncedQuery.length >= SEARCH_MIN_LENGTH;
 
+	const runAction = (action: () => void | Promise<unknown>) => {
+		setOpen(false);
+		void action();
+	};
+
 	return (
 		<CommandDialog
 			open={open}
@@ -251,6 +262,35 @@ export const Cmdk = () => {
 						/>
 					</>
 				)}
+				<CommandSeparator />
+				<CommandGroup heading="Account">
+					{session?.user && (
+						<CommandItem
+							onSelect={() =>
+								runAction(() => router.push(`/users/${session.user.id}`))
+							}
+						>
+							<User />
+							<span>Your profile</span>
+						</CommandItem>
+					)}
+					<CommandItem
+						onSelect={() =>
+							runAction(() =>
+								authClient.signOut({
+									fetchOptions: { onSuccess: () => router.push("/sign-in") },
+								}),
+							)
+						}
+					>
+						<LogOutIcon />
+						<span>Sign out</span>
+					</CommandItem>
+					<CommandItem onSelect={() => runAction(toggleSidebar)}>
+						<PanelLeftIcon />
+						<span>Toggle sidebar</span>
+					</CommandItem>
+				</CommandGroup>
 			</CommandList>
 			<CommandFooter className="flex items-center gap-2">
 				<CommandShortcut>
