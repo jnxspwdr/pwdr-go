@@ -1,12 +1,13 @@
 "use client";
 
 import {
+	LogOutIcon,
 	PanelLeftCloseIcon,
 	PanelLeftIcon,
 	PanelLeftOpenIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React from "react";
 import {
 	Sidebar,
@@ -24,9 +25,16 @@ import { MAIN_NAV_ITEMS } from "~/lib/nav";
 
 export const AppSidebar = () => {
 	const pathname = usePathname();
+	const router = useRouter();
 	const { state, toggleSidebar } = useSidebar();
 	const { data: session } = authClient.useSession();
 	const user = session?.user;
+
+	const handleSignOut = async () => {
+		await authClient.signOut({
+			fetchOptions: { onSuccess: () => router.push("/sign-in") },
+		});
+	};
 
 	return (
 		<Sidebar
@@ -60,6 +68,12 @@ export const AppSidebar = () => {
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<SidebarMenuButton size={"lg"}>{user?.firstName}</SidebarMenuButton>
+					</SidebarMenuItem>
+					<SidebarMenuItem>
+						<SidebarMenuButton tooltip="Sign out" onClick={handleSignOut}>
+							<LogOutIcon />
+							Sign out
+						</SidebarMenuButton>
 					</SidebarMenuItem>
 					<SidebarMenuItem>
 						<SidebarMenuButton onClick={() => toggleSidebar()}>
