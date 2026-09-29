@@ -386,7 +386,8 @@ add <name>` (the `shadcn` devDependency), then were reformatted to this
   `enableSorting: false` on a column def to opt out (avatar, pronouns); `useDataTable({
 columns, data, initialState? })` builds a table instance from those
   features (`initialState.columnVisibility` sets which columns start
-  hidden), and `<DataTable table={table} />` renders it. Column `meta`
+  hidden, `initialState.sorting` the default sort — tickets start on
+  `updatedAt` desc; unsorted headers render muted), and `<DataTable table={table} />` renders it. Column `meta`
   supports
   `primary`/`fitContent`/`hideHeader`/`columnClassName`/`getHref` (declared
   via module augmentation) for the primary-column-links-to-detail-page
