@@ -36,7 +36,7 @@ const orgs = ORG_DEFS.map((def, i) => {
 		Math.floor((i * regularUsers.length) / ORG_DEFS.length),
 		Math.floor(((i + 1) * regularUsers.length) / ORG_DEFS.length),
 	);
-	const admin = createPwdrUser(def.domain);
+	const admin = createPwdrUser(def.domain, i);
 
 	return {
 		id: crypto.randomUUID(),

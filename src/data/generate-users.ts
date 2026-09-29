@@ -158,17 +158,22 @@ export const generateUsers = (): User[] => {
 	return users;
 };
 
-// Stored inline as a base64 data URI so the avatar doesn't depend on a
-// third-party host.
-const POWDER_AVATAR = `data:image/png;base64,${readFileSync(
-	new URL("./assets/powder-avatar.png", import.meta.url),
-).toString("base64")}`;
+// Stored inline as base64 data URIs so avatars don't depend on a third-party
+// host.
+const POWDER_AVATARS = [1, 2, 3].map(
+	(n) =>
+		`data:image/png;base64,${readFileSync(
+			new URL(`./assets/powder-avatar-${n}.png`, import.meta.url),
+		).toString("base64")}`,
+);
 
 // "Powder" is a distinct admin account per organization (not one account
 // shared across orgs), so each org gets its own login —
 // e.g. jnxspwdr@acme.com, jnxspwdr@globex.com — rather than pwdr needing
 // multiple memberships/an org switcher to be admin everywhere.
-export const createPwdrUser = (emailDomain: string): User => {
+// `orgIndex` picks the avatar: unique per org up to POWDER_AVATARS.length orgs,
+// then cycles.
+export const createPwdrUser = (emailDomain: string, orgIndex: number): User => {
 	const pwdrFirstName = "Powder";
 	const pwdr: User = {
 		id: faker.string.ulid(),
@@ -178,7 +183,7 @@ export const createPwdrUser = (emailDomain: string): User => {
 		gender: "Agender",
 		pronouns: ["they/them", "any/all"],
 		email: `jnxspwdr@${emailDomain}`,
-		avatar: POWDER_AVATAR,
+		avatar: POWDER_AVATARS[orgIndex % POWDER_AVATARS.length],
 		phoneNumber: faker.phone.number({ style: "international" }),
 		jobSite: faker.helpers.arrayElement(JOB_SITES),
 		jobTitle: "HR Manager",
