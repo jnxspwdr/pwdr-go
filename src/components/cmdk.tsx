@@ -131,7 +131,7 @@ export const Cmdk = () => {
 		}
 
 		const handleKbdShortcut = (e: KeyboardEvent) => {
-			if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+			if (e.key === "k" && (e.metaKey || e.ctrlKey) && !open) {
 				e.preventDefault();
 
 				setOpen((open) => !open);
@@ -230,17 +230,6 @@ export const Cmdk = () => {
 						</CommandItem>
 					))}
 				</CommandGroup>
-				<CommandSeparator />
-				<CommandGroup>
-					<CommandItem>
-						<Smile />
-						<span>Search Emoji</span>
-					</CommandItem>
-					<CommandItem>
-						<Calculator />
-						<span>Calculator</span>
-					</CommandItem>
-				</CommandGroup>
 				{showSearchResults && (
 					<>
 						<CommandSeparator />
@@ -262,26 +251,6 @@ export const Cmdk = () => {
 						/>
 					</>
 				)}
-				<CommandSeparator />
-				<CommandGroup heading="Settings">
-					<CommandItem asChild onSelect={() => router.push("/profile")}>
-						<Link href="/profile">
-							<User />
-							<span>Profile</span>
-							<CommandShortcut>⌘P</CommandShortcut>
-						</Link>
-					</CommandItem>
-					<CommandItem>
-						<CreditCard />
-						<span>Billing</span>
-						<CommandShortcut>⌘B</CommandShortcut>
-					</CommandItem>
-					<CommandItem>
-						<Settings />
-						<span>Settings</span>
-						<CommandShortcut>⌘S</CommandShortcut>
-					</CommandItem>
-				</CommandGroup>
 			</CommandList>
 			<CommandFooter className="flex items-center gap-2">
 				<CommandShortcut>
