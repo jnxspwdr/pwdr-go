@@ -79,7 +79,8 @@ address. "Powder" is seeded as a **distinct admin account per organization**
 (not one account with memberships everywhere) — `jnxspwdr@acme.com` for Acme
 Corp, `jnxspwdr@globex.com` for Globex Inc, one per `ORG_DEFS` entry in
 `src/data/seed.ts` — so each org can be tested as its own admin without an
-org switcher.
+org switcher. Each Powder account's `image` is the same avatar
+(`src/data/assets/powder-avatar.png`) stored inline as a base64 `data:` URI.
 
 ## Data model (`src/server/db/schema.ts`)
 
