@@ -157,8 +157,8 @@ too. Exports `useSession` / `signOut`.
 `authClient.signIn.emailOtp`, redirects to `/dashboard` on success.
 
 **Sign-out**: better-auth's catch-all route (`/api/auth/[...all]`) already
-serves `POST /api/auth/sign-out`; no custom endpoint. The `NavUser` dropdown
-(`src/components/nav-user.tsx`, top of the `AppSidebar` footer) has a "Sign
+serves `POST /api/auth/sign-out`; no custom endpoint. The user dropdown
+(top of the `AppSidebar` footer in `src/components/app-sidebar.tsx`) has a "Sign
 out" item calling `authClient.signOut` and pushing to `/sign-in`. The same
 dropdown holds a Profile link and a Theme submenu (light/dark/system via
 `next-themes`' `useTheme`).
