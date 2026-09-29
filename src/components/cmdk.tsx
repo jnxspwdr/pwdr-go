@@ -200,7 +200,7 @@ export const Cmdk = () => {
 			document.removeEventListener("keydown", handleNavigation);
 			document.removeEventListener("keydown", handleOpenPage);
 		};
-	}, [setOpen, linkIsSelected]);
+	}, [open, setOpen, linkIsSelected]);
 
 	const showSearchResults = debouncedQuery.length >= SEARCH_MIN_LENGTH;
 
