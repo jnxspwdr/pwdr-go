@@ -2,7 +2,14 @@
 
 import { useElementSize } from "@mantine/hooks";
 import { cva, type VariantProps } from "class-variance-authority";
+import { CheckIcon, CopyIcon } from "lucide-react";
 import React from "react";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupButton,
+	InputGroupInput,
+} from "~/components/ui/input-group";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 import { cn } from "cn";
@@ -276,7 +283,46 @@ const FieldError = ({
 	);
 };
 
+/**
+ * Input for details pages. While the page is `editing`, a read-only input is dimmed to signal it can't be changed; when not editing it offers a copy button.
+ */
+const FieldDetailInput = ({
+	editing = false,
+	readOnly = true,
+	value,
+	...props
+}: Omit<React.ComponentProps<"input">, "value"> & {
+	value: string;
+	editing?: boolean;
+}) => {
+	const [copied, setCopied] = React.useState(false);
+
+	const copy = async () => {
+		await navigator.clipboard.writeText(value);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 1500);
+	};
+
+	return (
+		<InputGroup className={cn(editing && readOnly && "opacity-60")}>
+			<InputGroupInput {...props} value={value} readOnly={readOnly} />
+			{!editing && (
+				<InputGroupAddon align="inline-end">
+					<InputGroupButton
+						size="icon-sm"
+						aria-label="Copy to clipboard"
+						onClick={copy}
+					>
+						{copied ? <CheckIcon /> : <CopyIcon />}
+					</InputGroupButton>
+				</InputGroupAddon>
+			)}
+		</InputGroup>
+	);
+};
+
 export {
+	FieldDetailInput,
 	Field,
 	FieldContent,
 	FieldDescription,

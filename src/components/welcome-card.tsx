@@ -6,18 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/ui/card";
 
 export const WelcomeCard = ({ user }: { user: Session["user"] }) => {
 	return (
-		<Card>
+		<Card className="gap-2">
 			<CardHeader>
-				<CardTitle>Welcome {user.firstName}</CardTitle>
+				<CardTitle className="text-xl">Welcome {user.firstName}!</CardTitle>
 			</CardHeader>
 			<CardContent className="flex items-center gap-4">
-				<Avatar size="lg">
+				<Avatar size="xl">
 					<AvatarImage src={user.image ?? ""} alt={user.name} />
 					<AvatarFallback>
 						{getInitials(user.firstName, user.lastName)}
 					</AvatarFallback>
 				</Avatar>
-				<div className="text-muted-foreground flex flex-col gap-1 text-sm">
+				<div className="flex flex-col gap-1 text-sm text-muted-foreground">
 					<span className="flex items-center gap-2">
 						<MailIcon className="size-4" />
 						{user.email}

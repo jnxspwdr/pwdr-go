@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Info } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { flushSync } from "react-dom";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 import { authClient } from "~/lib/auth-client";
@@ -57,7 +58,7 @@ export const SignInForm = () => {
 			return;
 		}
 
-		setStep(1);
+		flushSync(() => setStep(1));
 		otpRef.current?.focus();
 	};
 
@@ -96,6 +97,7 @@ export const SignInForm = () => {
 					transition={{
 						ease: "easeInOut",
 					}}
+					inert={step !== 0}
 				>
 					<div className="space-y-2 pb-4">
 						<h1 className="text-2xl">
@@ -126,6 +128,7 @@ export const SignInForm = () => {
 												id={`rhf-sign-in-${field.name}`}
 												aria-invalid={fieldState.invalid}
 												autoComplete="off"
+												autoFocus
 												onKeyDown={(ev) => {
 													if (ev.key === "Enter") {
 														ev.preventDefault();
@@ -175,6 +178,7 @@ export const SignInForm = () => {
 					transition={{
 						ease: "easeInOut",
 					}}
+					inert={step !== 1}
 				>
 					<div className="space-y-2">
 						<h1 className="text-2xl">

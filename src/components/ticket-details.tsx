@@ -21,8 +21,13 @@ import {
 import { Badge } from "~/ui/badge";
 import { Button } from "~/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/ui/card";
-import { Field, FieldContent, FieldGroup, FieldLabel } from "~/ui/field";
-import { Input } from "~/ui/input";
+import {
+	Field,
+	FieldContent,
+	FieldDetailInput,
+	FieldGroup,
+	FieldLabel,
+} from "~/ui/field";
 import { Textarea } from "~/ui/textarea";
 
 type Ticket = RouterOutputs["tickets"]["byId"];
@@ -79,11 +84,7 @@ export const TicketDetails = ({ ticket }: { ticket: Ticket }) => {
 							<FieldLabel htmlFor="ticket-number-input">
 								Ticket number
 							</FieldLabel>
-							<Input
-								id="ticket-number-input"
-								value={ticket.ticketNumber}
-								readOnly
-							/>
+							<FieldDetailInput id="ticket-number-input" value={ticket.ticketNumber} />
 						</Field>
 						<Field>
 							<FieldLabel htmlFor="description-textarea">
@@ -122,35 +123,19 @@ export const TicketDetails = ({ ticket }: { ticket: Ticket }) => {
 
 						<Field>
 							<FieldLabel htmlFor="reported-by-input">Reported by</FieldLabel>
-							<Input
-								id="reported-by-input"
-								value={ticket.reportedBy.name}
-								readOnly
-							/>
+							<FieldDetailInput id="reported-by-input" value={ticket.reportedBy.name} />
 						</Field>
 						<Field>
 							<FieldLabel htmlFor="assigned-to-input">Assigned to</FieldLabel>
-							<Input
-								id="assigned-to-input"
-								value={ticket.assignedTo?.name ?? "Unassigned"}
-								readOnly
-							/>
+							<FieldDetailInput id="assigned-to-input" value={ticket.assignedTo?.name ?? "Unassigned"} />
 						</Field>
 						<Field>
 							<FieldLabel htmlFor="created-at-input">Created</FieldLabel>
-							<Input
-								id="created-at-input"
-								value={format(ticket.createdAt, "PPp")}
-								readOnly
-							/>
+							<FieldDetailInput id="created-at-input" value={format(ticket.createdAt, "PPp")} />
 						</Field>
 						<Field>
 							<FieldLabel htmlFor="updated-at-input">Last active</FieldLabel>
-							<Input
-								id="updated-at-input"
-								value={format(ticket.updatedAt, "PPp")}
-								readOnly
-							/>
+							<FieldDetailInput id="updated-at-input" value={format(ticket.updatedAt, "PPp")} />
 						</Field>
 					</FieldGroup>
 				</CardContent>

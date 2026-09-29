@@ -19,12 +19,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/ui/card";
 import {
 	Field,
 	FieldContent,
+	FieldDetailInput,
 	FieldError,
 	FieldGroup,
 	FieldLabel,
 	FieldSeparator,
 } from "~/ui/field";
-import { Input } from "~/ui/input";
 import {
 	Select,
 	SelectContent,
@@ -106,11 +106,19 @@ export const UserDetails = ({ user }: { user: User }) => {
 								<FieldGroup>
 									<Field>
 										<FieldLabel htmlFor="email-input">Email</FieldLabel>
-										<Input id="email-input" value={user.email} readOnly />
+										<FieldDetailInput
+											id="email-input"
+											value={user.email}
+											editing={isEditing}
+										/>
 									</Field>
 									<Field>
 										<FieldLabel htmlFor="gender-input">Gender</FieldLabel>
-										<Input id="gender-input" value={user.gender} readOnly />
+										<FieldDetailInput
+											id="gender-input"
+											value={user.gender}
+											editing={isEditing}
+										/>
 									</Field>
 
 									<Controller
@@ -121,9 +129,10 @@ export const UserDetails = ({ user }: { user: User }) => {
 												<FieldLabel htmlFor="phone-input">
 													Phone number
 												</FieldLabel>
-												<Input
+												<FieldDetailInput
 													{...field}
 													id="phone-input"
+													editing={isEditing}
 													readOnly={!isEditing}
 													aria-invalid={fieldState.invalid}
 												/>
@@ -166,10 +175,9 @@ export const UserDetails = ({ user }: { user: User }) => {
 													<FieldLabel htmlFor="job-title-input">
 														Job title
 													</FieldLabel>
-													<Input
+													<FieldDetailInput
 														id="job-title-input"
 														value={field.value}
-														readOnly
 													/>
 												</Field>
 											)
@@ -208,10 +216,9 @@ export const UserDetails = ({ user }: { user: User }) => {
 													<FieldLabel htmlFor="job-site-input">
 														Job site
 													</FieldLabel>
-													<Input
+													<FieldDetailInput
 														id="job-site-input"
 														value={field.value}
-														readOnly
 													/>
 												</Field>
 											)
@@ -250,10 +257,9 @@ export const UserDetails = ({ user }: { user: User }) => {
 													<FieldLabel htmlFor="agreement-input">
 														Agreement
 													</FieldLabel>
-													<Input
+													<FieldDetailInput
 														id="agreement-input"
 														value={field.value}
-														readOnly
 													/>
 												</Field>
 											)
